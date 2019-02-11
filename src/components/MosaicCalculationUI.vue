@@ -7,8 +7,15 @@
     </b-row>
     <b-row>
       <b-col>
-        <file-input id="nexus" label="Nexus region file"/>
-        <file-input id="array" label="Array input file"/>
+        <file-input id="nexus" label="Events file"/>
+        <file-input id="array" label="Nexus SNP Array input file"/>
+        <b-form-group label="Sex">
+          <b-form-radio-group id="sex" v-model="selectedSex" name="sexSelection" stacked>
+            <b-form-radio value="m"><font-awesome-icon icon="mars"/> Male</b-form-radio>
+            <b-form-radio value="f"><font-awesome-icon icon="venus"/> Female</b-form-radio>
+            <b-form-radio :value="u"><font-awesome-icon icon="genderless"/> Unknown</b-form-radio>
+          </b-form-radio-group>
+        </b-form-group>
       </b-col>
     </b-row>
     <b-row>
@@ -34,6 +41,7 @@ export default {
   components: { FileInput, SettingsPanel },
   data () {
     return {
+      selectedSex: '',
       filesLoaded: false,
       output: false
     }
