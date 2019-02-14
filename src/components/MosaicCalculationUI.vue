@@ -42,6 +42,13 @@
           <font-awesome-icon icon="download"/>
           Download output
         </b-btn>
+        <small>
+          <span id="status" class="float-right">
+            <font-awesome-icon icon="spinner" spin v-if="status === 'loading'"/>
+            <font-awesome-icon icon="check" v-if="status === 'success'"/>
+            {{this.statusMsg}}
+          </span>
+        </small>
       </b-col>
     </b-row>
   </b-container>
@@ -63,20 +70,29 @@ export default {
       // Generate random tablename for events and array table
       this.eventsTable = helpers.generateRandomString()
       this.arrayTable = helpers.generateRandomString()
+      this.setStatus('loading', 'Creating temporary events table...')
       // Generate the tables in molgenis
       this.CREATE_TABLE({ tableName: this.eventsTable, type: 'events', callback: this.processEvents })
       // this.CREATE_TABLE({ tableName: this.arrayTable, type: 'array' }
+    },
+    setStatus(status, message) {
+      this.statusMsg = message
+      this.status = status
     },
     processEvents () {
       const self = this
       const events = this.$store.state.events
       helpers.parseEventsHeader(events,  (sex, lines) => {
+        this.setStatus('loading', 'Setting sex...')
         // Select sex based on #Gender in events file
         self.selectedSex = sex
+        this.setStatus('loading', 'Adding events data to temporary table...')
         self.ADD_LINES({
           lines,
           table: this.eventsTable,
-          callback: () => { console.log('Done adding lines') }
+          callback: () => {
+            this.setStatus('success', 'Events data added to temporary table')
+          }
         })
       })
     }
@@ -87,7 +103,9 @@ export default {
       filesLoaded: true,
       output: false,
       eventsTable: '',
-      arrayTable: ''
+      arrayTable: '',
+      status: '',
+      statusMsg: ''
     }
   }
 }
