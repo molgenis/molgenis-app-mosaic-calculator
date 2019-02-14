@@ -50,7 +50,6 @@
 <script>
 import FileInput from './FileInput'
 import SettingsPanel from './SettingsPanel'
-import lineReader from '../helpers/lineReader.ts'
 import helpers from '../helpers/tools.ts'
 import { mapMutations, mapActions } from 'vuex'
 

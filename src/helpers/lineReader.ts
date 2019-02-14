@@ -1,5 +1,5 @@
 export default {
-  readSomeLines (file, maxLines, forEachLine, onComplete, onError) {
+  readSomeLines (file: any, maxLines: number, forEachLine: Function, onComplete: Function, onError: Function) {
     const CHUNK_SIZE = 50000 // 50kb, arbitrarily chosen.
     let offset = 0
     let lineCount = 0
@@ -7,10 +7,12 @@ export default {
 
     const fileReader = new FileReader()
     fileReader.onload = function () {
-      results = fileReader.result
+      let results: string = fileReader.result ? fileReader.result.toString() : ''
 
       const lines = results.split('\n')
-      results = lines.pop() // In case the line did not end yet.
+      // Ignore typescript here because we do check whether results is undefined
+      // @ts-ignore
+      results = lines.length > 0 ? lines.pop() : '' // In case the line did not end yet.
       lineCount += lines.length
 
       if (lineCount > maxLines) {
