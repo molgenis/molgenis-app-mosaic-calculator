@@ -11,11 +11,11 @@
         <file-input id="array" :mutation="SET_ARRAY" label="Nexus SNP Array input file"/>
         <b-form-group label="Sex">
           <b-form-radio-group id="sex" v-model="selectedSex" name="sexSelection" stacked>
-            <b-form-radio value="Male">
+            <b-form-radio value="male">
               <font-awesome-icon icon="mars"/>
               Male
             </b-form-radio>
-            <b-form-radio value="Female">
+            <b-form-radio value="female">
               <font-awesome-icon icon="venus"/>
               Female
             </b-form-radio>
@@ -34,7 +34,7 @@
     </b-row>
     <b-row>
       <b-col>
-        <b-btn variant="primary" :disabled="!filesLoaded" @click="selectSex">
+        <b-btn variant="primary" :disabled="!filesLoaded" @click="process">
           <font-awesome-icon icon="calculator"/>
           Calculate
         </b-btn>
@@ -51,29 +51,44 @@
 import FileInput from './FileInput'
 import SettingsPanel from './SettingsPanel'
 import lineReader from '../helpers/lineReader.ts'
-import { mapMutations } from 'vuex'
+import helpers from '../helpers/tools.ts'
+import { mapMutations, mapActions } from 'vuex'
 
 export default {
   name: 'mosaic-calculation-ui',
   components: { FileInput, SettingsPanel },
   methods: {
     ...mapMutations(['SET_EVENTS', 'SET_ARRAY']),
-    selectSex (eventsFile) {
+    ...mapActions(['CREATE_TABLE', 'ADD_LINES']),
+    process () {
+      // Generate random tablename for events and array table
+      this.eventsTable = helpers.generateRandomString()
+      this.arrayTable = helpers.generateRandomString()
+      // Generate the tables in molgenis
+      this.CREATE_TABLE({ tableName: this.eventsTable, type: 'events', callback: this.processEvents })
+      // this.CREATE_TABLE({ tableName: this.arrayTable, type: 'array' }
+    },
+    processEvents () {
       const self = this
       const events = this.$store.state.events
-      lineReader.readSomeLines(events, 50, function (line) {
-        if (line.startsWith('#Gender')) {
-          self.selectedSex = line.split(' = ')[1].replace(/(\r\n|\n|\r| |\t)/gm, '')
-        }
-        return true
-      }, function () { console.log('Done') }, function (error) { console.log(error) })
+      helpers.parseEventsHeader(events,  (sex, lines) => {
+        // Select sex based on #Gender in events file
+        self.selectedSex = sex
+        self.ADD_LINES({
+          lines,
+          table: this.eventsTable,
+          callback: () => { console.log('Done adding lines') }
+        })
+      })
     }
   },
   data () {
     return {
       selectedSex: '',
       filesLoaded: true,
-      output: false
+      output: false,
+      eventsTable: '',
+      arrayTable: ''
     }
   }
 }

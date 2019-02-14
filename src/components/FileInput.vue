@@ -4,7 +4,7 @@
     :label="label"
     :label-for="id+'-input-file'"
   >
-    <b-form-file :id="id+'-input-file'" :state="Boolean(file)" ref="fileinput"
+    <b-form-file :id="id+'-input-file'" :state="Boolean(file)" ref="fileinput" v-model="file"
                  placeholder="Choose a file..." @change="saveFile"></b-form-file>
   </b-form-group>
 </template>
