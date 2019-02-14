@@ -10,7 +10,40 @@ function generateRandomString() {
     }
     return text;
 }
-function parseEventsFile(events, done) {
+function parseArrayFile(array, callback) {
+    let started = false;
+    let firstLine = true;
+    let columns = [];
+    let lines = [];
+    lineReader.readSomeLines(array, 1000000, function (line) {
+        if (line.startsWith('[Data]')) {
+            started = true;
+        }
+        else if (started && firstLine) {
+            columns = line.trim().split('\t')
+                .map((value) => {
+                return value.toLowerCase().replace(/ /g, '_');
+            });
+            firstLine = false;
+        }
+        else if (!firstLine) {
+            const splitLine = line.trim().split('\t');
+            if (splitLine.length > 1) {
+                lines.push({
+                    'chr': splitLine[getIndex(columns, 'chr')],
+                    'position': splitLine[getIndex(columns, 'position')],
+                    'BAF': splitLine[getIndex(columns, 'b_allele_freq')]
+                });
+            }
+        }
+        return true;
+    }, function () {
+        callback(lines);
+    }, function (error) {
+        console.log(error);
+    });
+}
+function parseEventsFile(events, callback) {
     let sex = '';
     let columns = [];
     let lines = [];
@@ -22,38 +55,49 @@ function parseEventsFile(events, done) {
                 .toLowerCase();
         }
         else if (!line.startsWith('#') && firstLine) {
-            columns = line.replace('\n', '').split('\t')
+            columns = line.trim().split('\t')
                 .map((value) => {
-                return value.toLowerCase().replace(' ', '_');
+                return value.toLowerCase().replace(/ /g, '_');
             });
             firstLine = false;
         }
         else if (!firstLine) {
-            const splitLine = line.replace('\n', '').split('\t');
-            const chrRegion = splitLine[_getIndex(columns, 'chromosome_region')]
+            const splitLine = line.trim().split('\t');
+            const chrRegion = splitLine[getIndex(columns, 'chromosome_region')]
                 .replace(/,|chr/g, '')
                 .split(/:|-/);
             lines.push({
                 'chromosome': chrRegion[0],
                 'start': chrRegion[1],
                 'stop': chrRegion[2],
-                'event': splitLine[_getIndex(columns, 'event')],
-                'length': splitLine[_getIndex(columns, 'length')],
-                'probes': splitLine[_getIndex(columns, 'probes')]
+                'event': splitLine[getIndex(columns, 'event')],
+                'length': splitLine[getIndex(columns, 'length')],
+                'probes': splitLine[getIndex(columns, 'probes')]
             });
         }
         return true;
     }, function () {
-        done(sex, lines);
+        callback(sex, lines);
     }, function (error) {
         console.log(error);
     });
 }
-function _getIndex(array, value) {
-    return array.findIndex((arrVal) => arrVal === value);
+function getIndex(array, value) {
+    return array.indexOf(value);
 }
+function chunks(array, size) {
+    let results = [];
+    while (array.length) {
+        results.push(array.splice(0, size));
+    }
+    return results;
+}
+;
 export default {
     generateRandomString,
-    parseEventsHeader: parseEventsFile
+    parseEventsFile,
+    parseArrayFile,
+    chunks,
+    getIndex
 };
 //# sourceMappingURL=tools.js.map

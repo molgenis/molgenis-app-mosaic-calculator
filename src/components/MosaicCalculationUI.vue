@@ -72,17 +72,38 @@ export default {
       this.arrayTable = helpers.generateRandomString()
       this.setStatus('loading', 'Creating temporary events table...')
       // Generate the tables in molgenis
-      this.CREATE_TABLE({ tableName: this.eventsTable, type: 'events', callback: this.processEvents })
-      // this.CREATE_TABLE({ tableName: this.arrayTable, type: 'array' }
+      // this.CREATE_TABLE({ tableName: this.eventsTable, type: 'events', callback: this.processEvents })
+      this.setStatus('loading', 'Creating temporary array table...')
+      this.CREATE_TABLE({ tableName: this.arrayTable, type: 'array', callback: this.processArray })
     },
-    setStatus(status, message) {
+    setStatus (status, message) {
       this.statusMsg = message
       this.status = status
+    },
+    processArray () {
+      const self = this
+      const array = this.$store.state.array
+      helpers.parseArrayFile(array, (lines) => {
+        this.setStatus('loading', 'Adding array data to temporary table...')
+        const chunks = helpers.chunks(lines, 1000)
+        const total = chunks.length
+        let current = 0
+        chunks.forEach((lineBatch) => {
+          self.ADD_LINES({
+            lines: lineBatch,
+            table: this.arrayTable,
+            callback: () => {
+              current += 1
+              this.setStatus(total === current ? 'success' : 'loading', `Array data part ${current} of ${total} added to temporary table`)
+            }
+          })
+        })
+      })
     },
     processEvents () {
       const self = this
       const events = this.$store.state.events
-      helpers.parseEventsHeader(events,  (sex, lines) => {
+      helpers.parseEventsFile(events, (sex, lines) => {
         this.setStatus('loading', 'Setting sex...')
         // Select sex based on #Gender in events file
         self.selectedSex = sex
