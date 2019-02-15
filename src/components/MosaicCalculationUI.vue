@@ -72,12 +72,11 @@
         // Generate random tablename for events and array table
         this.eventsTable = helpers.generateRandomString()
         this.arrayTable = helpers.generateRandomString()
-        this.setStatus('loading', 'Creating temporary events table...')
         // Generate the tables in molgenis
         this.createTable(this.eventsTable, 'events', this.processEvents)
-        this.createTable(this.arrayTable, 'array', this.processArray)
       },
       createTable (table, type, callback) {
+        this.setStatus('loading', `Creating temporary ${type} table...`)
         this.CREATE_TABLE({
           tableName: table,
           type: type,
@@ -121,6 +120,7 @@
             table: this.eventsTable,
             callback: () => {
               this.setStatus('success', 'Events data added to temporary table')
+              this.createTable(this.arrayTable, 'array', this.processArray)
             }
           })
         }, (errorMsg) => {this.setStatus('error', errorMsg)})
