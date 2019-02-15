@@ -10,76 +10,102 @@ function generateRandomString() {
     }
     return text;
 }
-function parseArrayFile(array, callback) {
+function parseArrayFile(array, callback, errorFunction) {
     let started = false;
     let firstLine = true;
     let columns = [];
     let lines = [];
+    let errorMsg = '';
+    let foundHeader = false;
     lineReader.readSomeLines(array, 1000000, function (line) {
-        if (line.startsWith('[Data]')) {
+        if (!line.startsWith('[Header]')) {
+            foundHeader = true;
+        }
+        else if (line.startsWith('[Data]')) {
             started = true;
+            if (!foundHeader) {
+                errorMsg = 'Provided file is not an array file';
+                return false;
+            }
         }
         else if (started && firstLine) {
-            columns = line.trim().split('\t')
-                .map((value) => {
-                return value.toLowerCase().replace(/ /g, '_');
-            });
+            columns = getColumnsFromLine(line);
             firstLine = false;
         }
         else if (!firstLine) {
-            const splitLine = line.trim().split('\t');
-            if (splitLine.length > 1) {
+            const lineArray = splitLine(line);
+            if (lineArray.length > 1) {
                 lines.push({
-                    'chr': splitLine[getIndex(columns, 'chr')],
-                    'position': splitLine[getIndex(columns, 'position')],
-                    'BAF': splitLine[getIndex(columns, 'b_allele_freq')]
+                    'chr': lineArray[getIndex(columns, 'chr')],
+                    'position': lineArray[getIndex(columns, 'position')],
+                    'BAF': lineArray[getIndex(columns, 'b_allele_freq')]
                 });
             }
         }
         return true;
     }, function () {
         callback(lines);
-    }, function (error) {
-        console.log(error);
+    }, function (errorMessage) {
+        if (errorMsg.length > 0) {
+            errorFunction(errorMsg);
+        }
+        else {
+            errorFunction(errorMessage);
+        }
     });
 }
-function parseEventsFile(events, callback) {
+function parseEventsFile(events, callback, errorFunction) {
     let sex = '';
     let columns = [];
     let lines = [];
     let firstLine = true;
+    let errorMsg = '';
     lineReader.readSomeLines(events, 500, function (line) {
-        if (line.startsWith('#Gender')) {
+        if (!line.startsWith('#') && firstLine) {
+            errorMsg = 'Provided file is not an events file';
+            return false;
+        }
+        else if (line.startsWith('#Gender')) {
             sex = line.split(' = ')[1]
                 .replace(/(\r\n|\n|\r| |\t)/gm, '')
                 .toLowerCase();
         }
         else if (!line.startsWith('#') && firstLine) {
-            columns = line.trim().split('\t')
-                .map((value) => {
-                return value.toLowerCase().replace(/ /g, '_');
-            });
+            columns = getColumnsFromLine(line);
             firstLine = false;
         }
         else if (!firstLine) {
-            const splitLine = line.trim().split('\t');
-            const chrRegion = splitLine[getIndex(columns, 'chromosome_region')]
+            const lineArray = splitLine(line);
+            const chrRegion = lineArray[getIndex(columns, 'chromosome_region')]
                 .replace(/,|chr/g, '')
                 .split(/:|-/);
             lines.push({
                 'chromosome': chrRegion[0],
                 'start': chrRegion[1],
                 'stop': chrRegion[2],
-                'event': splitLine[getIndex(columns, 'event')],
-                'length': splitLine[getIndex(columns, 'length')],
-                'probes': splitLine[getIndex(columns, 'probes')]
+                'event': lineArray[getIndex(columns, 'event')],
+                'length': lineArray[getIndex(columns, 'length')],
+                'probes': lineArray[getIndex(columns, 'probes')]
             });
         }
         return true;
     }, function () {
         callback(sex, lines);
-    }, function (error) {
-        console.log(error);
+    }, function (errorMessage) {
+        if (errorMsg.length > 0) {
+            errorFunction(errorMsg);
+        }
+        else {
+            errorFunction(errorMessage);
+        }
+    });
+}
+function splitLine(line) {
+    return line.trim().split('\t');
+}
+function getColumnsFromLine(line) {
+    return splitLine(line).map((value) => {
+        return value.toLowerCase().replace(/ /g, '_');
     });
 }
 function getIndex(array, value) {
@@ -92,12 +118,13 @@ function chunks(array, size) {
     }
     return results;
 }
-;
 export default {
     generateRandomString,
     parseEventsFile,
     parseArrayFile,
     chunks,
-    getIndex
+    getIndex,
+    getColumnsFromLine,
+    splitLine
 };
 //# sourceMappingURL=tools.js.map

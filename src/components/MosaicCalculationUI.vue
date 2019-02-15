@@ -43,9 +43,11 @@
           Download output
         </b-btn>
         <small>
-          <span id="status" class="float-right">
+          <span id="status" class="float-right"
+                :style="statusStyle">
             <font-awesome-icon icon="spinner" spin v-if="status === 'loading'"/>
             <font-awesome-icon icon="check" v-if="status === 'success'"/>
+            <font-awesome-icon icon="times" v-if="status === 'error'"/>
             {{this.statusMsg}}
           </span>
         </small>
@@ -55,79 +57,94 @@
 </template>
 
 <script>
-import FileInput from './FileInput'
-import SettingsPanel from './SettingsPanel'
-import helpers from '../helpers/tools.ts'
-import { mapMutations, mapActions } from 'vuex'
+  import FileInput from './FileInput'
+  import SettingsPanel from './SettingsPanel'
+  import helpers from '../helpers/tools.ts'
+  import { mapMutations, mapActions } from 'vuex'
 
-export default {
-  name: 'mosaic-calculation-ui',
-  components: { FileInput, SettingsPanel },
-  methods: {
-    ...mapMutations(['SET_EVENTS', 'SET_ARRAY']),
-    ...mapActions(['CREATE_TABLE', 'ADD_LINES']),
-    process () {
-      // Generate random tablename for events and array table
-      this.eventsTable = helpers.generateRandomString()
-      this.arrayTable = helpers.generateRandomString()
-      this.setStatus('loading', 'Creating temporary events table...')
-      // Generate the tables in molgenis
-      // this.CREATE_TABLE({ tableName: this.eventsTable, type: 'events', callback: this.processEvents })
-      this.setStatus('loading', 'Creating temporary array table...')
-      this.CREATE_TABLE({ tableName: this.arrayTable, type: 'array', callback: this.processArray })
-    },
-    setStatus (status, message) {
-      this.statusMsg = message
-      this.status = status
-    },
-    processArray () {
-      const self = this
-      const array = this.$store.state.array
-      helpers.parseArrayFile(array, (lines) => {
-        this.setStatus('loading', 'Adding array data to temporary table...')
-        const chunks = helpers.chunks(lines, 1000)
-        const total = chunks.length
-        let current = 0
-        chunks.forEach((lineBatch) => {
+  export default {
+    name: 'mosaic-calculation-ui',
+    components: {FileInput, SettingsPanel},
+    methods: {
+      ...mapMutations(['SET_EVENTS', 'SET_ARRAY']),
+      ...mapActions(['CREATE_TABLE', 'ADD_LINES']),
+      process () {
+        // Generate random tablename for events and array table
+        this.eventsTable = helpers.generateRandomString()
+        this.arrayTable = helpers.generateRandomString()
+        this.setStatus('loading', 'Creating temporary events table...')
+        // Generate the tables in molgenis
+        this.CREATE_TABLE({
+          tableName: this.eventsTable,
+          type: 'events',
+          callback: this.processEvents,
+          error: (errorMsg) => function () {this.setStatus('error', errorMsg)}
+        })
+        this.setStatus('loading', 'Creating temporary array table...')
+        this.CREATE_TABLE({
+          tableName: this.arrayTable,
+          type: 'array',
+          callback: this.processArray,
+          errorFunction: function (errorMsg) {this.setStatus('error', errorMsg)}
+        })
+      },
+      setStatus (status, message) {
+        this.statusMsg = message
+        this.status = status
+      },
+      processArray () {
+        const self = this
+        const array = this.$store.state.array
+        helpers.parseArrayFile(array, (lines) => {
+          this.setStatus('loading', 'Adding array data to temporary table...')
+          const chunks = helpers.chunks(lines, 1000)
+          const total = chunks.length
+          let current = 0
+          chunks.forEach((lineBatch) => {
+            self.ADD_LINES({
+              lines: lineBatch,
+              table: this.arrayTable,
+              callback: () => {
+                current += 1
+                this.setStatus(total === current ? 'success' : 'loading', `Array data part ${current} of ${total} added to temporary table`)
+              }
+            })
+          })
+        }, (errorMsg) => {this.setStatus('error', errorMsg)})
+      },
+      processEvents () {
+        const self = this
+        const events = this.$store.state.events
+        helpers.parseEventsFile(events, (sex, lines) => {
+          this.setStatus('loading', 'Setting sex...')
+          // Select sex based on #Gender in events file
+          self.selectedSex = sex
+          this.setStatus('loading', 'Adding events data to temporary table...')
           self.ADD_LINES({
-            lines: lineBatch,
-            table: this.arrayTable,
+            lines,
+            table: this.eventsTable,
             callback: () => {
-              current += 1
-              this.setStatus(total === current ? 'success' : 'loading', `Array data part ${current} of ${total} added to temporary table`)
+              this.setStatus('success', 'Events data added to temporary table')
             }
           })
-        })
-      })
+        }, (errorMsg) => {this.setStatus('error', errorMsg)})
+      }
     },
-    processEvents () {
-      const self = this
-      const events = this.$store.state.events
-      helpers.parseEventsFile(events, (sex, lines) => {
-        this.setStatus('loading', 'Setting sex...')
-        // Select sex based on #Gender in events file
-        self.selectedSex = sex
-        this.setStatus('loading', 'Adding events data to temporary table...')
-        self.ADD_LINES({
-          lines,
-          table: this.eventsTable,
-          callback: () => {
-            this.setStatus('success', 'Events data added to temporary table')
-          }
-        })
-      })
-    }
-  },
-  data () {
-    return {
-      selectedSex: '',
-      filesLoaded: true,
-      output: false,
-      eventsTable: '',
-      arrayTable: '',
-      status: '',
-      statusMsg: ''
+    data () {
+      return {
+        selectedSex: '',
+        filesLoaded: true,
+        output: false,
+        eventsTable: '',
+        arrayTable: '',
+        status: '',
+        statusMsg: ''
+      }
+    },
+    computed: {
+      statusStyle: function () {
+        return `color:${this.status === 'error'? 'red': this.status === 'success' ? 'green' : 'black'}`
+      }
     }
   }
-}
 </script>
