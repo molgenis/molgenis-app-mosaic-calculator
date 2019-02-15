@@ -1,6 +1,7 @@
 import lineReader from '@/helpers/lineReader'
 
 import {Sex} from '@/types/helpers'
+import ArrayContaining = jasmine.ArrayContaining;
 
 function generateRandomString() {
   let text = ''
@@ -20,19 +21,26 @@ function parseArrayFile(array: File, callback: Function, errorFunction: Function
   let columns: Array<string> = []
   let lines: Array<any> = []
   let errorMsg = ''
-  let foundHeader = false
+  let headerFound = false
   lineReader.readSomeLines(array, 1000000, function (line: string) {
-    if (!line.startsWith('[Header]')) {
-      foundHeader = true
+    if (line.startsWith('#')){
+      errorMsg = 'Array file not valid: lines in file cannot start with "#"'
+      return false
+    } else if (line.startsWith('[Header]')) {
+      headerFound = true
     } else if (line.startsWith('[Data]')) {
-      started = true
-      if (! foundHeader) {
-        errorMsg = 'Provided file is not an array file'
+      if(!headerFound) {
+        errorMsg = 'Array file not valid: no [Header] defined above [Data]'
         return false
       }
+      started = true
     } else if (started && firstLine) {
       columns = getColumnsFromLine(line)
       firstLine = false
+      if (!areColumnsValid(columns, ['chr', 'position', 'b_allele_freq'])) {
+        errorMsg = 'Array file not valid: file should at least contain "chr", "position", and "b allele freq" column'
+        return false
+      }
     } else if (!firstLine) {
       const lineArray: Array<string> = splitLine(line)
       if (lineArray.length > 1) {
@@ -62,16 +70,17 @@ function parseEventsFile(events: File, callback: Function, errorFunction: Functi
   let firstLine = true
   let errorMsg = ''
   lineReader.readSomeLines(events, 500, function (line: string) {
-    if (!line.startsWith('#') && firstLine) {
-      errorMsg = 'Provided file is not an events file'
-      return false
-    } else if (line.startsWith('#Gender')) {
+    if (line.startsWith('#Gender')) {
       sex = line.split(' = ')[1]
         .replace(/(\r\n|\n|\r| |\t)/gm, '')
         .toLowerCase()
     } else if (!line.startsWith('#') && firstLine) {
       columns = getColumnsFromLine(line)
       firstLine = false
+      if (!areColumnsValid(columns, ['chromosome_region', 'event', 'length', 'probes'])) {
+        errorMsg = 'Events file not valid: file should at least contain "chromosome region", "event", "length", and "probes" column'
+        return false
+      }
     } else if (!firstLine) {
       const lineArray: Array<string> = splitLine(line)
       const chrRegion = lineArray[getIndex(columns, 'chromosome_region')]
@@ -102,10 +111,11 @@ function parseEventsFile(events: File, callback: Function, errorFunction: Functi
 function splitLine(line: string) {
   return line.trim().split('\t')
 }
+
 function getColumnsFromLine(line: string) {
   return splitLine(line).map((value) => {
-      return value.toLowerCase().replace(/ /g, '_')
-    })
+    return value.toLowerCase().replace(/ /g, '_')
+  })
 }
 
 function getIndex(array: Array<string>, value: string) {
@@ -120,6 +130,16 @@ function chunks(array: Array<any>, size: number) {
   return results
 }
 
+function areColumnsValid(columns: Array<string>, requiredColumns: Array<string>) {
+  let valid = true
+  requiredColumns.forEach((column) => {
+    if (getIndex(columns, column) === -1) {
+      valid = false
+    }
+  })
+  return valid
+}
+
 export default {
   generateRandomString,
   parseEventsFile,
@@ -127,5 +147,6 @@ export default {
   chunks,
   getIndex,
   getColumnsFromLine,
-  splitLine
+  splitLine,
+  areColumnsValid
 }

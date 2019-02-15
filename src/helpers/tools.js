@@ -16,21 +16,29 @@ function parseArrayFile(array, callback, errorFunction) {
     let columns = [];
     let lines = [];
     let errorMsg = '';
-    let foundHeader = false;
+    let headerFound = false;
     lineReader.readSomeLines(array, 1000000, function (line) {
-        if (!line.startsWith('[Header]')) {
-            foundHeader = true;
+        if (line.startsWith('#')) {
+            errorMsg = 'Array file not valid: lines in file cannot start with "#"';
+            return false;
+        }
+        else if (line.startsWith('[Header]')) {
+            headerFound = true;
         }
         else if (line.startsWith('[Data]')) {
-            started = true;
-            if (!foundHeader) {
-                errorMsg = 'Provided file is not an array file';
+            if (!headerFound) {
+                errorMsg = 'Array file not valid: no [Header] defined above [Data]';
                 return false;
             }
+            started = true;
         }
         else if (started && firstLine) {
             columns = getColumnsFromLine(line);
             firstLine = false;
+            if (!areColumnsValid(columns, ['chr', 'position', 'b_allele_freq'])) {
+                errorMsg = 'Array file not valid: file should at least contain "chr", "position", and "b allele freq" column';
+                return false;
+            }
         }
         else if (!firstLine) {
             const lineArray = splitLine(line);
@@ -61,11 +69,7 @@ function parseEventsFile(events, callback, errorFunction) {
     let firstLine = true;
     let errorMsg = '';
     lineReader.readSomeLines(events, 500, function (line) {
-        if (!line.startsWith('#') && firstLine) {
-            errorMsg = 'Provided file is not an events file';
-            return false;
-        }
-        else if (line.startsWith('#Gender')) {
+        if (line.startsWith('#Gender')) {
             sex = line.split(' = ')[1]
                 .replace(/(\r\n|\n|\r| |\t)/gm, '')
                 .toLowerCase();
@@ -73,6 +77,10 @@ function parseEventsFile(events, callback, errorFunction) {
         else if (!line.startsWith('#') && firstLine) {
             columns = getColumnsFromLine(line);
             firstLine = false;
+            if (!areColumnsValid(columns, ['chromosome_region', 'event', 'length', 'probes'])) {
+                errorMsg = 'Events file not valid: file should at least contain "chromosome region", "event", "length", and "probes" column';
+                return false;
+            }
         }
         else if (!firstLine) {
             const lineArray = splitLine(line);
@@ -118,6 +126,15 @@ function chunks(array, size) {
     }
     return results;
 }
+function areColumnsValid(columns, requiredColumns) {
+    let valid = true;
+    requiredColumns.forEach((column) => {
+        if (getIndex(columns, column) === -1) {
+            valid = false;
+        }
+    });
+    return valid;
+}
 export default {
     generateRandomString,
     parseEventsFile,
@@ -125,6 +142,7 @@ export default {
     chunks,
     getIndex,
     getColumnsFromLine,
-    splitLine
+    splitLine,
+    areColumnsValid
 };
 //# sourceMappingURL=tools.js.map
