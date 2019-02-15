@@ -129,7 +129,6 @@
     data () {
       return {
         selectedSex: '',
-        filesLoaded: true,
         output: false,
         eventsTable: '',
         arrayTable: '',
@@ -140,6 +139,9 @@
     computed: {
       statusStyle: function () {
         return `color:${this.status === 'error'? 'red': this.status === 'success' ? 'green' : 'black'}`
+      },
+      filesLoaded: function () {
+        return this.$store.state.array && this.$store.state.events ? true : false
       }
     }
   }
