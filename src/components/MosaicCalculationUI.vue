@@ -66,7 +66,7 @@
             <font-awesome-icon icon="spinner" spin v-if="status === 'loading'"/>
             <font-awesome-icon icon="check" v-if="status === 'success'"/>
             <font-awesome-icon icon="times" v-if="status === 'error'"/>
-            {{this.statusMsg}}
+            <span v-if="status != ''">{{Math.round(this.progress)}}% {{this.statusMsg}}</span>
           </span>
         </small>
       </b-col>
@@ -77,7 +77,8 @@
 <script>
 import FileInput from './FileInput'
 import SettingsPanel from './SettingsPanel'
-import helpers from '../helpers/fileParsers.ts'
+import helpers from '../helpers/tools.ts'
+import fileParsers from '../helpers/fileParsers.ts'
 import { mapMutations, mapActions } from 'vuex'
 
 export default {
@@ -94,22 +95,24 @@ export default {
       this.createTable(this.eventsTable, 'events', this.processEvents)
     },
     createTable (table, type, callback) {
-      this.setStatus('loading', `Creating temporary ${type} table...`)
+      this.setStatus('loading', `Creating temporary ${type} table...`, 0)
       this.CREATE_TABLE({
         tableName: table,
         type: type,
         callback: callback
       })
     },
-    setStatus (status, message) {
+    setStatus (status, message, progress) {
+      console.log(status, message, progress)
+      this.progress += progress
       this.statusMsg = message
       this.status = status
     },
     processArray () {
       const self = this
       const array = this.$store.state.array
-      helpers.parseArrayFile(array, (lines) => {
-        this.setStatus('loading', 'Adding array data to temporary table...')
+      fileParsers.parseArrayFile(array, (lines) => {
+        this.setStatus('loading', 'Adding array data to temporary table...', 5)
         const chunks = helpers.chunks(lines, 1000)
         const total = chunks.length
         let current = 0
@@ -120,46 +123,46 @@ export default {
             table: this.arrayTable,
             callback: () => {
               current += 1
-              this.setStatus(total === current ? 'success' : 'loading', `Array data part ${current} of ${total} added to temporary table`)
+              this.setStatus(total === current ? 'success' : 'loading', `Array data part ${current} of ${total} added to temporary table`, 65/total)
             }
           })
         })
       }, this.exp,
-      (errorMsg) => { this.setStatus('error', errorMsg) })
+      (errorMsg) => { this.setStatus('error', errorMsg), 0 })
     },
     processEvents () {
       const self = this
       const events = this.$store.state.events
-      helpers.parseEventsFile(events, (sex, lines, exp) => {
+      fileParsers.parseEventsFile(events, (sex, lines, exp) => {
         self.events = lines
         self.exp = exp
-        this.setStatus('loading', 'Setting sex...')
+        this.setStatus('loading', 'Setting sex...', 1)
         if (sex !== '') {
           // Select sex based on #Gender in events file
           self.selectedSex = sex
           this.proceedProcess()
         } else {
-          this.setStatus('loading', 'Waiting for user to select sex...')
+          this.setStatus('loading', 'Waiting for user to select sex...', 0)
           self.sexWarning = true
         }
-      }, (errorMsg) => { this.setStatus('error', errorMsg) })
+      }, (errorMsg) => { this.setStatus('error', errorMsg), 0 })
     },
     resetSexWarning () {
-      this.setStatus('', '')
+      this.setStatus('', '', 0)
       this.sexWarning = false
     },
     resetEvents () {
-      resetSexWarning ()
+      this.resetSexWarning ()
       this.exp = ''
     },
     proceedProcess () {
       this.resetSexWarning()
-      this.setStatus('loading', 'Adding events data to temporary table...')
+      this.setStatus('loading', 'Adding events data to temporary table...', 1)
       this.ADD_LINES({
         lines: this.events,
         table: this.eventsTable,
         callback: () => {
-          this.setStatus('success', 'Events data added to temporary table')
+          this.setStatus('success', 'Events data added to temporary table', 3)
           this.createTable(this.arrayTable, 'array', this.processArray)
         }
       })
@@ -168,6 +171,7 @@ export default {
   },
   data () {
     return {
+      progress: 0,
       selectedSex: '',
       output: false,
       eventsTable: '',
