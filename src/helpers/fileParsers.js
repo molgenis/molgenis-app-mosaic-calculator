@@ -1,5 +1,5 @@
-import lineReader from "@/helpers/lineReader";
-import tools from "@/helpers/tools";
+import lineReader from '@/helpers/lineReader';
+import tools from '@/helpers/tools';
 function parseArrayFile(array, callback, eventExp, errorFunction) {
     let started = false;
     let firstLine = true;

@@ -1,8 +1,7 @@
-import lineReader from "@/helpers/lineReader"
-import tools from "@/helpers/tools"
+import lineReader from '@/helpers/lineReader'
+import tools from '@/helpers/tools'
 
-
-function parseArrayFile(array: File, callback: Function, eventExp: string, errorFunction: Function) {
+function parseArrayFile (array: File, callback: Function, eventExp: string, errorFunction: Function) {
   let started = false
   let firstLine = true
   let columns: Array<string> = []
@@ -58,7 +57,7 @@ function parseArrayFile(array: File, callback: Function, eventExp: string, error
   })
 }
 
-function parseEventsFile(events: File, callback: Function, errorFunction: Function) {
+function parseEventsFile (events: File, callback: Function, errorFunction: Function) {
   let sex: string = ''
   let exp: string = ''
   let columns: Array<string> = []
@@ -105,7 +104,7 @@ function parseEventsFile(events: File, callback: Function, errorFunction: Functi
   })
 }
 
-function areColumnsValid(columns: Array<string>, requiredColumns: Array<string>) {
+function areColumnsValid (columns: Array<string>, requiredColumns: Array<string>) {
   let valid = true
   requiredColumns.forEach((column) => {
     if (tools.getIndex(columns, column) === -1) {
@@ -115,16 +114,15 @@ function areColumnsValid(columns: Array<string>, requiredColumns: Array<string>)
   return valid
 }
 
-function splitLine(line: string) {
+function splitLine (line: string) {
   return line.trim().split('\t')
 }
 
-function getColumnsFromLine(line: string) {
+function getColumnsFromLine (line: string) {
   return splitLine(line).map((value) => {
     return value.toLowerCase().replace(/ /g, '_')
   })
 }
-
 
 export default {
   parseEventsFile,
