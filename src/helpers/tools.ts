@@ -12,13 +12,14 @@ function generateRandomString () {
   return text
 }
 
-function parseArrayFile (array: File, callback: Function, errorFunction: Function) {
+function parseArrayFile (array: File, callback: Function, eventExp: string, errorFunction: Function) {
   let started = false
   let firstLine = true
   let columns: Array<string> = []
   let lines: Array<any> = []
   let errorMsg = ''
   let headerFound = false
+  let exp = ''
   lineReader.readSomeLines(array, 1000000, function (line: string) {
     if (line.startsWith('#')) {
       errorMsg = 'Array file not valid: lines in file cannot start with "#"'
@@ -40,6 +41,13 @@ function parseArrayFile (array: File, callback: Function, errorFunction: Functio
       }
     } else if (!firstLine) {
       const lineArray: Array<string> = splitLine(line)
+      if (exp === '') {
+        exp = lineArray[getIndex(columns, 'sample_id')]
+        if (exp.trim() !== eventExp) {
+          errorMsg = `Experiment ID from events file: "${eventExp}" does not match experiment ID from array file: "${exp}"`
+          return false
+        }
+      }
       if (lineArray.length > 1) {
         lines.push({
           'chr': lineArray[getIndex(columns, 'chr')],
@@ -62,12 +70,15 @@ function parseArrayFile (array: File, callback: Function, errorFunction: Functio
 
 function parseEventsFile (events: File, callback: Function, errorFunction: Function) {
   let sex: string = ''
+  let exp: string = ''
   let columns: Array<string> = []
   let lines: Array<Object> = []
   let firstLine = true
   let errorMsg = ''
   lineReader.readSomeLines(events, 500, function (line: string) {
-    if (line.startsWith('#Gender')) {
+    if (line.startsWith('#File Sample ID')) {
+      exp = line.split(' = ')[1].trim()
+    } else if (line.startsWith('#Gender')) {
       sex = line.split(' = ')[1]
         .replace(/(\r\n|\n|\r| |\t)/gm, '')
         .toLowerCase()
@@ -94,7 +105,7 @@ function parseEventsFile (events: File, callback: Function, errorFunction: Funct
     }
     return true
   }, function () {
-    callback(sex, lines)
+    callback(sex, lines, exp)
   }, function (errorMessage: string) {
     if (errorMsg.length > 0) {
       errorFunction(errorMsg)

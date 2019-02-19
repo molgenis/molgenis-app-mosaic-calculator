@@ -7,7 +7,7 @@
     </b-row>
     <b-row>
       <b-col>
-        <file-input id="events" :mutation="SET_EVENTS" label="Events file" :onChange="resetSexWarning"/>
+        <file-input id="events" :mutation="SET_EVENTS" label="Events file" :onChange="resetEvents"/>
         <file-input id="array" :mutation="SET_ARRAY" label="Nexus SNP Array input file"/>
         <b-form-group label="Sex">
           <b-form-radio-group id="sex" v-model="selectedSex" name="sexSelection" stacked :disabled="!sexWarning">
@@ -37,7 +37,9 @@
           <b-row>
             <b-col>
               <br/>
-              <b-button variant='success' size="sm" :disabled="selectedSex === ''" @click="proceedProcess"><font-awesome-icon icon="check"/></b-button>
+              <b-button variant='success' size="sm" :disabled="selectedSex === ''" @click="proceedProcess">
+                <font-awesome-icon icon="check"/>
+              </b-button>
             </b-col>
           </b-row>
         </b-alert>
@@ -111,6 +113,7 @@ export default {
         const chunks = helpers.chunks(lines, 1000)
         const total = chunks.length
         let current = 0
+
         chunks.forEach((lineBatch) => {
           self.ADD_LINES({
             lines: lineBatch,
@@ -121,13 +124,15 @@ export default {
             }
           })
         })
-      }, (errorMsg) => { this.setStatus('error', errorMsg) })
+      }, this.exp,
+      (errorMsg) => { this.setStatus('error', errorMsg) })
     },
     processEvents () {
       const self = this
       const events = this.$store.state.events
-      helpers.parseEventsFile(events, (sex, lines) => {
+      helpers.parseEventsFile(events, (sex, lines, exp) => {
         self.events = lines
+        self.exp = exp
         this.setStatus('loading', 'Setting sex...')
         if (sex !== '') {
           // Select sex based on #Gender in events file
@@ -142,6 +147,10 @@ export default {
     resetSexWarning () {
       this.setStatus('', '')
       this.sexWarning = false
+    },
+    resetEvents () {
+      resetSexWarning ()
+      this.exp = ''
     },
     proceedProcess () {
       this.resetSexWarning()
@@ -166,7 +175,8 @@ export default {
       status: '',
       statusMsg: '',
       sexWarning: false,
-      events: []
+      events: [],
+      exp: ''
     }
   },
   computed: {
