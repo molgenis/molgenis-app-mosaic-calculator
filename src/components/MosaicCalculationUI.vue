@@ -77,7 +77,7 @@
 <script>
 import FileInput from './FileInput'
 import SettingsPanel from './SettingsPanel'
-import helpers from '../helpers/tools.ts'
+import helpers from '../helpers/fileParsers.ts'
 import { mapMutations, mapActions } from 'vuex'
 
 export default {
