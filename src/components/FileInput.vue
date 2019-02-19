@@ -13,7 +13,7 @@
 
 export default {
   name: 'file-input',
-  props: ['label', 'id', 'mutation'],
+  props: ['label', 'id', 'mutation', 'onChange'],
   data () {
     return {
       file: null
@@ -22,6 +22,9 @@ export default {
   methods: {
     saveFile () {
       const file = this.$refs.fileinput.$refs.input.files[0]
+      if (this.onChange) {
+        this.onChange()
+      }
       this.mutation(file)
     }
   }

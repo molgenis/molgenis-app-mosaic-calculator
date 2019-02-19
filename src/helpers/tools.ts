@@ -1,9 +1,6 @@
 import lineReader from '@/helpers/lineReader'
 
-import {Sex} from '@/types/helpers'
-import ArrayContaining = jasmine.ArrayContaining;
-
-function generateRandomString() {
+function generateRandomString () {
   let text = ''
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   // First character must be a letter
@@ -15,7 +12,7 @@ function generateRandomString() {
   return text
 }
 
-function parseArrayFile(array: File, callback: Function, errorFunction: Function) {
+function parseArrayFile (array: File, callback: Function, errorFunction: Function) {
   let started = false
   let firstLine = true
   let columns: Array<string> = []
@@ -23,13 +20,13 @@ function parseArrayFile(array: File, callback: Function, errorFunction: Function
   let errorMsg = ''
   let headerFound = false
   lineReader.readSomeLines(array, 1000000, function (line: string) {
-    if (line.startsWith('#')){
+    if (line.startsWith('#')) {
       errorMsg = 'Array file not valid: lines in file cannot start with "#"'
       return false
     } else if (line.startsWith('[Header]')) {
       headerFound = true
     } else if (line.startsWith('[Data]')) {
-      if(!headerFound) {
+      if (!headerFound) {
         errorMsg = 'Array file not valid: no [Header] defined above [Data]'
         return false
       }
@@ -63,7 +60,7 @@ function parseArrayFile(array: File, callback: Function, errorFunction: Function
   })
 }
 
-function parseEventsFile(events: File, callback: Function, errorFunction: Function) {
+function parseEventsFile (events: File, callback: Function, errorFunction: Function) {
   let sex: string = ''
   let columns: Array<string> = []
   let lines: Array<Object> = []
@@ -104,25 +101,24 @@ function parseEventsFile(events: File, callback: Function, errorFunction: Functi
     } else {
       errorFunction(errorMessage)
     }
-
   })
 }
 
-function splitLine(line: string) {
+function splitLine (line: string) {
   return line.trim().split('\t')
 }
 
-function getColumnsFromLine(line: string) {
+function getColumnsFromLine (line: string) {
   return splitLine(line).map((value) => {
     return value.toLowerCase().replace(/ /g, '_')
   })
 }
 
-function getIndex(array: Array<string>, value: string) {
+function getIndex (array: Array<string>, value: string) {
   return array.indexOf(value)
 }
 
-function chunks(array: Array<any>, size: number) {
+function chunks (array: Array<any>, size: number) {
   let results = []
   while (array.length) {
     results.push(array.splice(0, size))
@@ -130,7 +126,7 @@ function chunks(array: Array<any>, size: number) {
   return results
 }
 
-function areColumnsValid(columns: Array<string>, requiredColumns: Array<string>) {
+function areColumnsValid (columns: Array<string>, requiredColumns: Array<string>) {
   let valid = true
   requiredColumns.forEach((column) => {
     if (getIndex(columns, column) === -1) {
