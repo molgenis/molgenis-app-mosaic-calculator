@@ -146,6 +146,7 @@ export default {
     parseArrayFile,
     getColumnsFromLine,
     splitLine,
-    areColumnsValid
+    areColumnsValid,
+    parseArrayLine
 };
 //# sourceMappingURL=fileParsers.js.map

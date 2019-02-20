@@ -145,5 +145,6 @@ export default {
   parseArrayFile,
   getColumnsFromLine,
   splitLine,
-  areColumnsValid
+  areColumnsValid,
+  parseArrayLine
 }
