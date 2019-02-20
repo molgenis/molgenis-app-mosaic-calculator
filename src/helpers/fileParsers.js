@@ -1,5 +1,49 @@
 import lineReader from '@/helpers/lineReader';
 import tools from '@/helpers/tools';
+function parseArrayLine(line, started, firstLine, columns, lines, errorMsg, headerFound, exp, eventExp) {
+    let toGoOnOrNotToGoOn = true;
+    if (line.startsWith('#')) {
+        errorMsg = 'Array file not valid: lines in file cannot start with "#"';
+        toGoOnOrNotToGoOn = false;
+    }
+    else if (line.startsWith('[Header]')) {
+        headerFound = true;
+    }
+    else if (line.startsWith('[Data]')) {
+        if (!headerFound) {
+            errorMsg = 'Array file not valid: no [Header] defined above [Data]';
+            toGoOnOrNotToGoOn = false;
+        }
+        started = true;
+    }
+    else if (started && firstLine) {
+        columns = getColumnsFromLine(line);
+        firstLine = false;
+        if (!areColumnsValid(columns, ['chr', 'position', 'b_allele_freq'])) {
+            errorMsg = 'Array file not valid: file should at least contain "chr", "position", and "b allele freq" column';
+            toGoOnOrNotToGoOn = false;
+        }
+    }
+    else if (!firstLine) {
+        const lineArray = splitLine(line);
+        if (exp === '') {
+            exp = lineArray[tools.getIndex(columns, 'sample_id')];
+            if (exp.trim() !== eventExp) {
+                errorMsg = `Experiment ID from events file: "${eventExp}" does not match experiment ID from array file: "${exp}"`;
+                toGoOnOrNotToGoOn = false;
+            }
+        }
+        if (lineArray.length > 1) {
+            lines.push({
+                'chr': lineArray[tools.getIndex(columns, 'chr')],
+                'position': lineArray[tools.getIndex(columns, 'position')],
+                'BAF': lineArray[tools.getIndex(columns, 'b_allele_freq')]
+            });
+        }
+    }
+    return { started: started, firstLine: firstLine, columns: columns, lines: lines, errorMsg: errorMsg,
+        headerFound: headerFound, exp: exp, eventExp: eventExp, toGoOnOrNotToGoOn: toGoOnOrNotToGoOn };
+}
 function parseArrayFile(array, callback, eventExp, errorFunction) {
     let started = false;
     let firstLine = true;
@@ -9,46 +53,16 @@ function parseArrayFile(array, callback, eventExp, errorFunction) {
     let headerFound = false;
     let exp = '';
     lineReader.readSomeLines(array, 1000000, function (line) {
-        if (line.startsWith('#')) {
-            errorMsg = 'Array file not valid: lines in file cannot start with "#"';
-            return false;
-        }
-        else if (line.startsWith('[Header]')) {
-            headerFound = true;
-        }
-        else if (line.startsWith('[Data]')) {
-            if (!headerFound) {
-                errorMsg = 'Array file not valid: no [Header] defined above [Data]';
-                return false;
-            }
-            started = true;
-        }
-        else if (started && firstLine) {
-            columns = getColumnsFromLine(line);
-            firstLine = false;
-            if (!areColumnsValid(columns, ['chr', 'position', 'b_allele_freq'])) {
-                errorMsg = 'Array file not valid: file should at least contain "chr", "position", and "b allele freq" column';
-                return false;
-            }
-        }
-        else if (!firstLine) {
-            const lineArray = splitLine(line);
-            if (exp === '') {
-                exp = lineArray[tools.getIndex(columns, 'sample_id')];
-                if (exp.trim() !== eventExp) {
-                    errorMsg = `Experiment ID from events file: "${eventExp}" does not match experiment ID from array file: "${exp}"`;
-                    return false;
-                }
-            }
-            if (lineArray.length > 1) {
-                lines.push({
-                    'chr': lineArray[tools.getIndex(columns, 'chr')],
-                    'position': lineArray[tools.getIndex(columns, 'position')],
-                    'BAF': lineArray[tools.getIndex(columns, 'b_allele_freq')]
-                });
-            }
-        }
-        return true;
+        let processedLine = parseArrayLine(line, started, firstLine, columns, lines, errorMsg, headerFound, exp, eventExp);
+        started = processedLine.started;
+        firstLine = processedLine.firstLine;
+        columns = processedLine.columns;
+        lines = processedLine.lines;
+        errorMsg = processedLine.errorMsg;
+        headerFound = processedLine.headerFound;
+        exp = processedLine.exp;
+        eventExp = processedLine.eventExp;
+        return processedLine.toGoOnOrNotToGoOn;
     }, function () {
         callback(lines);
     }, function (errorMessage) {
