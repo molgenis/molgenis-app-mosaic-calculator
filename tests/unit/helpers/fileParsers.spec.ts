@@ -203,7 +203,7 @@ describe('fileParsers', () => {
       let exp = ''
       let eventExp = 'experiment1'
 
-      const expectedLines = [{'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'}]
+      const expectedLines = [{ 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574' }]
 
       const parsedLine = fileParsers.parseArrayLine(line, started, firstLine, columns, lines, errorMsg, headerFound, exp, eventExp)
       expect(parsedLine.started).toBe(started)
@@ -222,7 +222,7 @@ describe('fileParsers', () => {
       let started = true
       let firstLine = false
       let columns: Array<string> = ['snp_name', 'sample_id', 'chr', 'position', 'log_r_ratio', 'b_allele_freq']
-      let lines: Array<any> = [{'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'}]
+      let lines: Array<any> = [{ 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574' }]
       let errorMsg = ''
       let headerFound = true
       let exp = 'experiment1'
@@ -245,15 +245,15 @@ describe('fileParsers', () => {
       let started = true
       let firstLine = false
       let columns: Array<string> = ['snp_name', 'sample_id', 'chr', 'position', 'log_r_ratio', 'b_allele_freq']
-      let lines: Array<any> = [{'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'}]
+      let lines: Array<any> = [{ 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574' }]
       let errorMsg = ''
       let headerFound = true
       let exp = 'experiment1'
       let eventExp = 'experiment1'
 
       const expectedLines = [
-        {'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'},
-        {'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'
+        { 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574' },
+        { 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'
         }]
 
       const parsedLine = fileParsers.parseArrayLine(line, started, firstLine, columns, lines, errorMsg, headerFound, exp, eventExp)

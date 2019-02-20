@@ -26,9 +26,9 @@ describe('tools', () => {
       // First slice should be the first x (size) number of elements from the big array
       const firstSlice = bigArray.slice(0, size)
       // Last elements index is the number of times the size fits in the length of the big array
-      const lastElement = Math.floor(bigArray.length/size)
+      const lastElement = Math.floor(bigArray.length / size)
       // The length of the last element should be equal to the length of th big array modulo the size
-      const lengthOfLastElement = bigArray.length%size
+      const lengthOfLastElement = bigArray.length % size
       const choppedArray = tools.chunks(bigArray, size)
       expect(choppedArray[0]).toEqual(firstSlice)
       expect(choppedArray[1].length).toBe(size)
