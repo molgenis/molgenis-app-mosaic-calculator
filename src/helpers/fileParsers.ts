@@ -3,7 +3,7 @@ import tools from '@/helpers/tools'
 
 function parseArrayLine (line: string, started: boolean, firstLine: boolean, columns: Array<string>,
   lines: Array<any>, errorMsg: string, headerFound: boolean, exp: string, eventExp: string) {
-  let toGoOnOrNotToGoOn:boolean = true
+  let toGoOnOrNotToGoOn: boolean = true
   if (line.startsWith('#')) {
     errorMsg = 'Array file not valid: lines in file cannot start with "#"'
     toGoOnOrNotToGoOn = false
@@ -39,7 +39,8 @@ function parseArrayLine (line: string, started: boolean, firstLine: boolean, col
       })
     }
   }
-  return { started: started,
+  return {
+    started: started,
     firstLine: firstLine,
     columns: columns,
     lines: lines,
@@ -47,7 +48,8 @@ function parseArrayLine (line: string, started: boolean, firstLine: boolean, col
     headerFound: headerFound,
     exp: exp,
     eventExp: eventExp,
-    toGoOnOrNotToGoOn: toGoOnOrNotToGoOn }
+    toGoOnOrNotToGoOn: toGoOnOrNotToGoOn
+  }
 }
 
 function parseArrayFile (array: File, callback: Function, eventExp: string, errorFunction: Function) {
@@ -80,42 +82,63 @@ function parseArrayFile (array: File, callback: Function, eventExp: string, erro
   })
 }
 
+function parseEventsLine (line: string, sex: string, exp: string, columns: Array<string>, lines: Array<Object>,
+  firstLine: boolean, errorMsg: string) {
+  let toGoOnOrNotToGoOn = true
+  if (line.startsWith('#File Sample ID')) {
+    exp = line.split(' = ')[1].trim()
+  } else if (line.startsWith('#Gender')) {
+    sex = line.split(' = ')[1]
+      .replace(/(\r\n|\n|\r| |\t)/gm, '')
+      .toLowerCase()
+  } else if (!line.startsWith('#') && firstLine) {
+    columns = getColumnsFromLine(line)
+    firstLine = false
+    if (!areColumnsValid(columns, ['chromosome_region', 'event', 'length', 'probes'])) {
+      errorMsg = 'Events file not valid: file should at least contain "chromosome region", "event", "length", and "probes" column'
+      toGoOnOrNotToGoOn = false
+    }
+  } else if (!firstLine) {
+    const lineArray: Array<string> = splitLine(line)
+    const chrRegion = lineArray[tools.getIndex(columns, 'chromosome_region')]
+      .replace(/,|chr/g, '')
+      .split(/:|-/)
+    lines.push({
+      'chromosome': chrRegion[0],
+      'start': chrRegion[1],
+      'stop': chrRegion[2],
+      'event': lineArray[tools.getIndex(columns, 'event')],
+      'length': lineArray[tools.getIndex(columns, 'length')],
+      'probes': lineArray[tools.getIndex(columns, 'probes')]
+    })
+  }
+  return {
+    toGoOnOrNotToGoOn: toGoOnOrNotToGoOn,
+    firstLine: firstLine,
+    columns: columns,
+    lines: lines,
+    errorMsg: errorMsg,
+    exp: exp,
+    sex: sex
+  }
+}
+
 function parseEventsFile (events: File, callback: Function, errorFunction: Function) {
   let sex: string = ''
   let exp: string = ''
   let columns: Array<string> = []
   let lines: Array<Object> = []
-  let firstLine = true
-  let errorMsg = ''
+  let firstLine: boolean = true
+  let errorMsg: string = ''
   lineReader.readSomeLines(events, 500, function (line: string) {
-    if (line.startsWith('#File Sample ID')) {
-      exp = line.split(' = ')[1].trim()
-    } else if (line.startsWith('#Gender')) {
-      sex = line.split(' = ')[1]
-        .replace(/(\r\n|\n|\r| |\t)/gm, '')
-        .toLowerCase()
-    } else if (!line.startsWith('#') && firstLine) {
-      columns = getColumnsFromLine(line)
-      firstLine = false
-      if (!areColumnsValid(columns, ['chromosome_region', 'event', 'length', 'probes'])) {
-        errorMsg = 'Events file not valid: file should at least contain "chromosome region", "event", "length", and "probes" column'
-        return false
-      }
-    } else if (!firstLine) {
-      const lineArray: Array<string> = splitLine(line)
-      const chrRegion = lineArray[tools.getIndex(columns, 'chromosome_region')]
-        .replace(/,|chr/g, '')
-        .split(/:|-/)
-      lines.push({
-        'chromosome': chrRegion[0],
-        'start': chrRegion[1],
-        'stop': chrRegion[2],
-        'event': lineArray[tools.getIndex(columns, 'event')],
-        'length': lineArray[tools.getIndex(columns, 'length')],
-        'probes': lineArray[tools.getIndex(columns, 'probes')]
-      })
-    }
-    return true
+    const processedLine = parseEventsLine(line, sex, exp, columns, lines, firstLine, errorMsg)
+    firstLine = processedLine.firstLine
+    columns = processedLine.columns
+    lines = processedLine.lines
+    errorMsg = processedLine.errorMsg
+    exp = processedLine.exp
+    sex = processedLine.sex
+    return processedLine.toGoOnOrNotToGoOn
   }, function () {
     callback(sex, lines, exp)
   }, function (errorMessage: string) {

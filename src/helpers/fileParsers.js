@@ -37,7 +37,8 @@ function parseArrayLine (line, started, firstLine, columns, lines, errorMsg, hea
       })
     }
   }
-  return { started: started,
+  return {
+    started: started,
     firstLine: firstLine,
     columns: columns,
     lines: lines,
@@ -45,7 +46,8 @@ function parseArrayLine (line, started, firstLine, columns, lines, errorMsg, hea
     headerFound: headerFound,
     exp: exp,
     eventExp: eventExp,
-    toGoOnOrNotToGoOn: toGoOnOrNotToGoOn }
+    toGoOnOrNotToGoOn: toGoOnOrNotToGoOn
+  }
 }
 function parseArrayFile (array, callback, eventExp, errorFunction) {
   let started = false
@@ -76,6 +78,45 @@ function parseArrayFile (array, callback, eventExp, errorFunction) {
     }
   })
 }
+function parseEventsLine (line, sex, exp, columns, lines, firstLine, errorMsg) {
+  let toGoOnOrNotToGoOn = true
+  if (line.startsWith('#File Sample ID')) {
+    exp = line.split(' = ')[1].trim()
+  } else if (line.startsWith('#Gender')) {
+    sex = line.split(' = ')[1]
+      .replace(/(\r\n|\n|\r| |\t)/gm, '')
+      .toLowerCase()
+  } else if (!line.startsWith('#') && firstLine) {
+    columns = getColumnsFromLine(line)
+    firstLine = false
+    if (!areColumnsValid(columns, ['chromosome_region', 'event', 'length', 'probes'])) {
+      errorMsg = 'Events file not valid: file should at least contain "chromosome region", "event", "length", and "probes" column'
+      toGoOnOrNotToGoOn = false
+    }
+  } else if (!firstLine) {
+    const lineArray = splitLine(line)
+    const chrRegion = lineArray[tools.getIndex(columns, 'chromosome_region')]
+      .replace(/,|chr/g, '')
+      .split(/:|-/)
+    lines.push({
+      'chromosome': chrRegion[0],
+      'start': chrRegion[1],
+      'stop': chrRegion[2],
+      'event': lineArray[tools.getIndex(columns, 'event')],
+      'length': lineArray[tools.getIndex(columns, 'length')],
+      'probes': lineArray[tools.getIndex(columns, 'probes')]
+    })
+  }
+  return {
+    toGoOnOrNotToGoOn: toGoOnOrNotToGoOn,
+    firstLine: firstLine,
+    columns: columns,
+    lines: lines,
+    errorMsg: errorMsg,
+    exp: exp,
+    sex: sex
+  }
+}
 function parseEventsFile (events, callback, errorFunction) {
   let sex = ''
   let exp = ''
@@ -84,34 +125,14 @@ function parseEventsFile (events, callback, errorFunction) {
   let firstLine = true
   let errorMsg = ''
   lineReader.readSomeLines(events, 500, function (line) {
-    if (line.startsWith('#File Sample ID')) {
-      exp = line.split(' = ')[1].trim()
-    } else if (line.startsWith('#Gender')) {
-      sex = line.split(' = ')[1]
-        .replace(/(\r\n|\n|\r| |\t)/gm, '')
-        .toLowerCase()
-    } else if (!line.startsWith('#') && firstLine) {
-      columns = getColumnsFromLine(line)
-      firstLine = false
-      if (!areColumnsValid(columns, ['chromosome_region', 'event', 'length', 'probes'])) {
-        errorMsg = 'Events file not valid: file should at least contain "chromosome region", "event", "length", and "probes" column'
-        return false
-      }
-    } else if (!firstLine) {
-      const lineArray = splitLine(line)
-      const chrRegion = lineArray[tools.getIndex(columns, 'chromosome_region')]
-        .replace(/,|chr/g, '')
-        .split(/:|-/)
-      lines.push({
-        'chromosome': chrRegion[0],
-        'start': chrRegion[1],
-        'stop': chrRegion[2],
-        'event': lineArray[tools.getIndex(columns, 'event')],
-        'length': lineArray[tools.getIndex(columns, 'length')],
-        'probes': lineArray[tools.getIndex(columns, 'probes')]
-      })
-    }
-    return true
+    const processedLine = parseEventsLine(line, sex, exp, columns, lines, firstLine, errorMsg)
+    firstLine = processedLine.firstLine
+    columns = processedLine.columns
+    lines = processedLine.lines
+    errorMsg = processedLine.errorMsg
+    exp = processedLine.exp
+    sex = processedLine.sex
+    return processedLine.toGoOnOrNotToGoOn
   }, function () {
     callback(sex, lines, exp)
   }, function (errorMessage) {
