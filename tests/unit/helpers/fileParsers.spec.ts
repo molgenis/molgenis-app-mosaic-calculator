@@ -1,4 +1,5 @@
 import fileParsers from '@/helpers/fileParsers'
+import tools from "@/helpers/tools";
 
 describe('fileParsers', () => {
   describe('getIndex', () => {
@@ -25,6 +26,124 @@ describe('fileParsers', () => {
         const requiredColumnsFail = ['chr', 'position', 'other_value']
         const isValidFalse = fileParsers.areColumnsValid(columns, requiredColumnsFail)
         expect(isValidFalse).toBe(false)
+      })
+    })
+    describe('parseEventsLine', () => {
+      it('should set experiment id', () => {
+        const line = '#File Sample ID = experiment1\n'
+        let firstLine = true
+        let columns: Array<string> = []
+        let lines: Array<any> = []
+        let errorMsg = ''
+        let exp = ''
+        let sex = ''
+
+        const parsedLine = fileParsers.parseEventsLine(line, sex, exp, columns, lines, firstLine, errorMsg)
+
+        expect(parsedLine.firstLine).toBe(firstLine)
+        expect(parsedLine.columns).toBe(columns)
+        expect(parsedLine.lines).toBe(lines)
+        expect(parsedLine.errorMsg).toBe(errorMsg)
+        expect(parsedLine.exp).toBe('experiment1')
+        expect(parsedLine.sex).toBe(sex)
+        expect(parsedLine.toGoOnOrNotToGoOn).toBe(true)
+      })
+
+      it('should set sex', () => {
+        const line = '#Gender = Male\n'
+        let firstLine = true
+        let columns: Array<string> = []
+        let lines: Array<any> = []
+        let errorMsg = ''
+        let exp = 'experiment1'
+        let sex = ''
+
+        const parsedLine = fileParsers.parseEventsLine(line, sex, exp, columns, lines, firstLine, errorMsg)
+
+        expect(parsedLine.firstLine).toBe(firstLine)
+        expect(parsedLine.columns).toBe(columns)
+        expect(parsedLine.lines).toBe(lines)
+        expect(parsedLine.errorMsg).toBe(errorMsg)
+        expect(parsedLine.exp).toBe(exp)
+        expect(parsedLine.sex).toBe('male')
+        expect(parsedLine.toGoOnOrNotToGoOn).toBe(true)
+      })
+
+      it('should set columns', () => {
+        const line = 'Chromosome Region\tEvent\tLength\tCytoband\t% of CNV Overlap\tProbe Median\t% Heterozygous\tProbes\tCount of Gene Symbols\n'
+        let firstLine = true
+        let columns: Array<string> = []
+        let lines: Array<any> = []
+        let errorMsg = ''
+        let exp = 'experiment1'
+        let sex = 'male'
+
+        const parsedLine = fileParsers.parseEventsLine(line, sex, exp, columns, lines, firstLine, errorMsg)
+
+        const expectedColumns = ['chromosome_region', 'event', 'length', 'cytoband', '%_of_cnv_overlap', 'probe_median',
+          '%_heterozygous', 'probes', 'count_of_gene_symbols']
+
+        expect(parsedLine.firstLine).toBe(false)
+        expect(parsedLine.columns).toEqual(expectedColumns)
+        expect(parsedLine.lines).toBe(lines)
+        expect(parsedLine.errorMsg).toBe(errorMsg)
+        expect(parsedLine.exp).toBe(exp)
+        expect(parsedLine.sex).toBe(sex)
+        expect(parsedLine.toGoOnOrNotToGoOn).toBe(true)
+      })
+
+      it('should return false and set error message if not all columns are set', () => {
+        const line = 'Chromosome Region\tLength\tCytoband\t% of CNV Overlap\tProbe Median\t% Heterozygous\tProbes\tCount of Gene Symbols\n'
+        let firstLine = true
+        let columns: Array<string> = []
+        let lines: Array<any> = []
+        let errorMsg = ''
+        let exp = 'experiment1'
+        let sex = 'male'
+
+        const parsedLine = fileParsers.parseEventsLine(line, sex, exp, columns, lines, firstLine, errorMsg)
+
+        const expectedColumns = ['chromosome_region', 'length', 'cytoband', '%_of_cnv_overlap', 'probe_median',
+          '%_heterozygous', 'probes', 'count_of_gene_symbols']
+        const expectedErrorMsg = 'Events file not valid: file should at least contain "chromosome region", "event", "length", and "probes" column'
+
+        expect(parsedLine.firstLine).toBe(false)
+        expect(parsedLine.columns).toEqual(expectedColumns)
+        expect(parsedLine.lines).toBe(lines)
+        expect(parsedLine.errorMsg).toBe(expectedErrorMsg)
+        expect(parsedLine.exp).toBe(exp)
+        expect(parsedLine.sex).toBe(sex)
+        expect(parsedLine.toGoOnOrNotToGoOn).toBe(false)
+      })
+
+      it('should add line to lines array', () => {
+        const line = 'chr1:9,902,514-10,735,816\tLOH\t833303\tp36.22\t11.530873560845889\t-0.01675529219210148\t1.1857707509881423\t253\t15\n\n'
+        let firstLine = false
+        let columns: Array<string> = ['chromosome_region', 'event', 'length', 'cytoband', '%_of_cnv_overlap', 'probe_median',
+          '%_heterozygous', 'probes', 'count_of_gene_symbols']
+        let lines: Array<any> = []
+        let errorMsg = ''
+        let exp = 'experiment1'
+        let sex = 'male'
+
+        const parsedLine = fileParsers.parseEventsLine(line, sex, exp, columns, lines, firstLine, errorMsg)
+
+        const expectedLines = [{
+          'chromosome': '1',
+          'start': '9902514',
+          'stop': '10735816',
+          'event': 'LOH',
+          'length': '833303',
+          'probes': '253'
+        }]
+
+        expect(parsedLine.firstLine).toBe(firstLine)
+        expect(parsedLine.columns).toBe(columns)
+        expect(parsedLine.lines).toEqual(expectedLines)
+        expect(parsedLine.errorMsg).toBe(errorMsg)
+        expect(parsedLine.exp).toBe(exp)
+        expect(parsedLine.sex).toBe(sex)
+        expect(parsedLine.toGoOnOrNotToGoOn).toBe(true)
       })
     })
     describe('parseArrayLine', () => {
@@ -203,7 +322,7 @@ describe('fileParsers', () => {
       let exp = ''
       let eventExp = 'experiment1'
 
-      const expectedLines = [{ 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574' }]
+      const expectedLines = [{'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'}]
 
       const parsedLine = fileParsers.parseArrayLine(line, started, firstLine, columns, lines, errorMsg, headerFound, exp, eventExp)
       expect(parsedLine.started).toBe(started)
@@ -222,7 +341,7 @@ describe('fileParsers', () => {
       let started = true
       let firstLine = false
       let columns: Array<string> = ['snp_name', 'sample_id', 'chr', 'position', 'log_r_ratio', 'b_allele_freq']
-      let lines: Array<any> = [{ 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574' }]
+      let lines: Array<any> = [{'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'}]
       let errorMsg = ''
       let headerFound = true
       let exp = 'experiment1'
@@ -245,15 +364,16 @@ describe('fileParsers', () => {
       let started = true
       let firstLine = false
       let columns: Array<string> = ['snp_name', 'sample_id', 'chr', 'position', 'log_r_ratio', 'b_allele_freq']
-      let lines: Array<any> = [{ 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574' }]
+      let lines: Array<any> = [{'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'}]
       let errorMsg = ''
       let headerFound = true
       let exp = 'experiment1'
       let eventExp = 'experiment1'
 
       const expectedLines = [
-        { 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574' },
-        { 'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'
+        {'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'},
+        {
+          'chr': 'X', 'position': '68757767', 'BAF': '0.9888574'
         }]
 
       const parsedLine = fileParsers.parseArrayLine(line, started, firstLine, columns, lines, errorMsg, headerFound, exp, eventExp)

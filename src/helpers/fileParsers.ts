@@ -88,9 +88,7 @@ function parseEventsLine (line: string, sex: string, exp: string, columns: Array
   if (line.startsWith('#File Sample ID')) {
     exp = line.split(' = ')[1].trim()
   } else if (line.startsWith('#Gender')) {
-    sex = line.split(' = ')[1]
-      .replace(/(\r\n|\n|\r| |\t)/gm, '')
-      .toLowerCase()
+    sex = line.split(' = ')[1].trim().toLowerCase()
   } else if (!line.startsWith('#') && firstLine) {
     columns = getColumnsFromLine(line)
     firstLine = false
@@ -176,5 +174,6 @@ export default {
   getColumnsFromLine,
   splitLine,
   areColumnsValid,
-  parseArrayLine
+  parseArrayLine,
+  parseEventsLine
 }
