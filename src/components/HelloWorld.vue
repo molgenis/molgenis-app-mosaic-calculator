@@ -31,11 +31,34 @@
             </div>
           </div>
           <button type="submit" class="btn btn-primary" v-on:click="calculate">Calculate</button>
-          <button type="button" class="ml-1 btn btn-info" v-on:click="doJob(experimentRowId)" :disabled=running><i v-show="running" class="fas fa-spinner fa-spin"></i> Test Job</button>
-          <button type="button" class="ml-1 btn btn-secondary" v-on:click="testPdf" :disabled=running> Test PDF</button>
+          <button type="button" class="ml-1 btn btn-info" v-on:click="doJob(experimentRowId)" :disabled=running>Test Job</button>
+          <button type="button" class="ml-1 btn btn-secondary" v-on:click="testPdf" :disabled=running>Test PDF</button>
         </form>
       </div>
     </div>
+
+    <div class="mosaic-spacer row mt-2 mb-2">
+      <div class="col">
+        <hr/>
+      </div>
+    </div>
+
+    <div class="row" v-show="running">
+      <div class="col-md-6">
+        <span>
+          <i class="fas fa-spinner fa-spin"></i>
+          <span v-show="!experimentRowId"> Uploading data ...</span>
+          <span v-show="experimentRowId"> Running analysis, this can take some time ...</span>
+        </span>
+      </div>
+    </div>
+
+    <div v-if="resultUrl" class="row">
+      <div class="col-md-6">
+        <a class="btn btn-primary" :href=resultUrl>Download pdf</a>
+      </div>
+    </div>
+
     <div class="row">
       <div class="col-md-12">
         <div v-if="resultUrl">
@@ -43,7 +66,7 @@
             <pdf :src="pdfdata" v-for="i in numPages" :key="i" :id="i" :page="i"
                  :scale="scale" style="width:100%;margin:20px auto;">
               <template slot="loading">
-                loading content here...
+                loading results...
               </template>
             </pdf>
           </div>
@@ -107,9 +130,12 @@ export default Vue.extend({
         snpFile: this.snpFile
       }
 
+      this.running = true
+
       experimentRepository.save(formData, formFields).then((entityId) => {
         console.log('entity id: ' + entityId)
         this.experimentRowId = entityId
+        this.doJob(this.experimentRowId)
       })
     },
     doJob (experimentRowId) {
