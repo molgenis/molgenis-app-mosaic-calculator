@@ -31,12 +31,23 @@
             </div>
           </div>
           <button type="submit" class="btn btn-primary" v-on:click="calculate">Calculate</button>
+          <button type="button" class="ml-1 btn btn-info" v-on:click="doJob" :disabled=running><i v-show="running" class="fas fa-spinner fa-spin"></i> Test Job</button>
+          <button type="button" class="ml-1 btn btn-secondary" v-on:click="testPdf" :disabled=running> Test PDF</button>
         </form>
       </div>
     </div>
     <div class="row">
-      <div class="col-md-6">
-        <button type="button" class="btn btn-info" v-on:click="doJob" :disabled=running><i v-show="running" class="fas fa-spinner fa-spin"></i> Test Job</button>
+      <div class="col-md-12">
+        <div v-if="resultUrl">
+          <div id="pdfvuer">
+            <pdf :src="pdfdata" v-for="i in numPages" :key="i" :id="i" :page="i"
+                 :scale="scale" style="width:100%;margin:20px auto;">
+              <template slot="loading">
+                loading content here...
+              </template>
+            </pdf>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -44,6 +55,7 @@
 
 <script>
 import Vue from 'vue'
+import pdfvuer from 'pdfvuer'
 import * as experimentRepository from '@/repository/ExperimentRepository'
 import * as scriptJobRepository from '@/repository/ScriptJobRepository'
 
@@ -60,18 +72,30 @@ const formFields = [{
 
 export default Vue.extend({
   name: 'HelloWorld',
+  components: {
+    pdf: pdfvuer
+  },
   data () {
     return {
       running: false,
       interval: null,
+      resultUrl: null, // '/files/5806213a69f14f3db00d81e59d6256af..pdf',
       eventFileLabel: 'Deviations event file',
       snpFileLabel: 'B allele frequencies file',
       eventFile: {},
       snpFile: {},
-      gender: ''
+      gender: '',
+      page: 1,
+      numPages: 0,
+      pdfdata: undefined,
+      errors: [],
+      scale: 'page-width'
     }
   },
   methods: {
+    testPdf () {
+      this.getPdf(this.resultUrl)
+    },
     calculate (event) {
       if (event) {
         event.preventDefault()
@@ -102,9 +126,16 @@ export default Vue.extend({
           if (pollResponse.status !== 'RUNNING') {
             clearInterval(this.interval)
             this.running = false
+
+            if (pollResponse.status === 'SUCCESS') {
+              this.resultUrl = pollResponse.resultUrl
+              this.getPdf(this.resultUrl)
+            } else {
+              alert('Error running stuff')
+            }
           }
         })
-      }, 300)
+      }, 1000)
     },
     processFile (event) {
       const fileType = event && event.target && event.target.id ? event.target.id : ''
@@ -119,9 +150,19 @@ export default Vue.extend({
         alert('Error file is missing.')
       }
     },
-    beforeDestroy () {
-      clearInterval(this.interval)
+    getPdf (pdfUrl) {
+      let self = this
+      self.pdfdata = pdfvuer.createLoadingTask(pdfUrl)
+      self.pdfdata.then(pdf => {
+        self.numPages = pdf.numPages
+      })
+    },
+    findPos (obj) {
+      return obj.offsetTop
     }
+  },
+  beforeDestroy () {
+    clearInterval(this.interval)
   }
 })
 </script>
