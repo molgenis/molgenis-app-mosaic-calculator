@@ -34,12 +34,18 @@
         </form>
       </div>
     </div>
+    <div class="row">
+      <div class="col-md-6">
+        <button type="button" class="btn btn-info" v-on:click="doJob" :disabled=running><i v-show="running" class="fas fa-spinner fa-spin"></i> Test Job</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import * as repository from '@/repository/ExperimentRepository'
+import * as experimentRepository from '@/repository/ExperimentRepository'
+import * as scriptJobRepository from '@/repository/ScriptJobRepository'
 
 const formFields = [{
   id: 'gender',
@@ -56,6 +62,8 @@ export default Vue.extend({
   name: 'HelloWorld',
   data () {
     return {
+      running: false,
+      interval: null,
       eventFileLabel: 'Deviations event file',
       snpFileLabel: 'B allele frequencies file',
       eventFile: {},
@@ -74,7 +82,29 @@ export default Vue.extend({
         snpFile: this.snpFile
       }
 
-      repository.save(formData, formFields)
+      experimentRepository.save(formData, formFields)
+      // todo store id in state
+    },
+    doJob () {
+      // todo use id from state
+      this.running = true
+      const experimentRowId = 'aaaac2jfmpuwrjxekv6ubrqaae'
+      const pollData = this.pollData
+      scriptJobRepository.run(experimentRowId).then((scriptJobId) => {
+        pollData(scriptJobId)
+      })
+    },
+    pollData (scriptJobId) {
+      this.interval = setInterval(() => {
+        console.log('polling')
+        scriptJobRepository.poll(scriptJobId).then((pollResponse) => {
+          console.log(pollResponse.log)
+          if (pollResponse.status !== 'RUNNING') {
+            clearInterval(this.interval)
+            this.running = false
+          }
+        })
+      }, 300)
     },
     processFile (event) {
       const fileType = event && event.target && event.target.id ? event.target.id : ''
@@ -88,6 +118,9 @@ export default Vue.extend({
       } else {
         alert('Error file is missing.')
       }
+    },
+    beforeDestroy () {
+      clearInterval(this.interval)
     }
   }
 })
