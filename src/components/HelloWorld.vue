@@ -31,7 +31,7 @@
             </div>
           </div>
           <button type="submit" class="btn btn-primary" v-on:click="calculate">Calculate</button>
-          <button type="button" class="ml-1 btn btn-info" v-on:click="doJob" :disabled=running><i v-show="running" class="fas fa-spinner fa-spin"></i> Test Job</button>
+          <button type="button" class="ml-1 btn btn-info" v-on:click="doJob(experimentRowId)" :disabled=running><i v-show="running" class="fas fa-spinner fa-spin"></i> Test Job</button>
           <button type="button" class="ml-1 btn btn-secondary" v-on:click="testPdf" :disabled=running> Test PDF</button>
         </form>
       </div>
@@ -77,6 +77,7 @@ export default Vue.extend({
   },
   data () {
     return {
+      experimentRowId: null,
       running: false,
       interval: null,
       resultUrl: null, // '/files/5806213a69f14f3db00d81e59d6256af..pdf',
@@ -106,13 +107,13 @@ export default Vue.extend({
         snpFile: this.snpFile
       }
 
-      experimentRepository.save(formData, formFields)
-      // todo store id in state
+      experimentRepository.save(formData, formFields).then((entityId) => {
+        console.log('entity id: ' + entityId)
+        this.experimentRowId = entityId
+      })
     },
-    doJob () {
-      // todo use id from state
+    doJob (experimentRowId) {
       this.running = true
-      const experimentRowId = 'aaaac2jfmpuwrjxekv6ubrqaae'
       const pollData = this.pollData
       scriptJobRepository.run(experimentRowId).then((scriptJobId) => {
         pollData(scriptJobId)

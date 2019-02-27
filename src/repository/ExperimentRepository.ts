@@ -1,6 +1,8 @@
 // @ts-ignore
 import api from '@molgenis/molgenis-api-client'
 
+const getEntityIdPost = (pollUri: string) => pollUri.split('/').pop()
+
 const buildFormData = (data: any, fields: any) => {
   const formData = new FormData()
   Object.entries(data).forEach((pair) => {
@@ -33,7 +35,10 @@ const doPost = (uri: string, formData: any, formFields: any) => {
     credentials: 'same-origin'
   }
 
-  return api.post(uri, options, true)
+  return api.post(uri, options, true).then((result: any) => {
+    const createdEntityLocation = result.headers.get('Location')
+    return getEntityIdPost(createdEntityLocation)
+  })
 }
 
 const save = (formData: any, formFields: any) => {
