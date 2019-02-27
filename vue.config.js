@@ -11,6 +11,12 @@ module.exports = {
         auth: 'admin:admin',
         secure: false,
         changeOrigin: true
+      },
+      '^/scripts': {
+        target: 'http://localhost:8080',
+        auth: 'admin:admin',
+        secure: false,
+        changeOrigin: true
       }
     }
   }
