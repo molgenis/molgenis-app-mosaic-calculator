@@ -31,8 +31,8 @@
             </div>
           </div>
           <button type="submit" class="btn btn-primary" v-on:click="calculate">Calculate</button>
-          <button type="button" class="ml-1 btn btn-info" v-on:click="doJob(experimentRowId)" :disabled=running>Test Job</button>
-          <button type="button" class="ml-1 btn btn-secondary" v-on:click="testPdf" :disabled=running>Test PDF</button>
+          <!--<button type="button" class="ml-1 btn btn-info" v-on:click="doJob(experimentRowId)" :disabled=running>Test Job</button>-->
+          <!--<button type="button" class="ml-1 btn btn-secondary" v-on:click="testPdf" :disabled=running>Test PDF</button>-->
         </form>
       </div>
     </div>
@@ -82,17 +82,6 @@ import pdfvuer from 'pdfvuer'
 import * as experimentRepository from '@/repository/ExperimentRepository'
 import * as scriptJobRepository from '@/repository/ScriptJobRepository'
 
-const formFields = [{
-  id: 'gender',
-  type: 'enum'
-}, {
-  id: 'eventFile',
-  type: 'file'
-}, {
-  id: 'snpFile',
-  type: 'file'
-}]
-
 export default Vue.extend({
   name: 'HelloWorld',
   components: {
@@ -117,23 +106,19 @@ export default Vue.extend({
     }
   },
   methods: {
-    testPdf () {
-      this.getPdf(this.resultUrl)
-    },
     calculate (event) {
       if (event) {
         event.preventDefault()
       }
+      this.running = true
+
       const formData = {
         gender: this.gender,
         eventFile: this.eventFile,
         snpFile: this.snpFile
       }
 
-      this.running = true
-
-      experimentRepository.save(formData, formFields).then((entityId) => {
-        console.log('entity id: ' + entityId)
+      experimentRepository.saveExpData(formData).then((entityId) => {
         this.experimentRowId = entityId
         this.doJob(this.experimentRowId)
       })
@@ -156,6 +141,7 @@ export default Vue.extend({
 
             if (pollResponse.status === 'SUCCESS') {
               this.resultUrl = pollResponse.resultUrl
+              this.storeResultId(this.experimentRowId, this.resultUrl)
               this.getPdf(this.resultUrl)
             } else {
               alert('Error running stuff')
@@ -163,6 +149,11 @@ export default Vue.extend({
           }
         })
       }, 1000)
+    },
+    storeResultId (experimentRowId, resultUrl) {
+      experimentRepository.saveResultFileId(experimentRowId, resultUrl).then((result) => {
+        console.log('result id stored')
+      })
     },
     processFile (event) {
       const fileType = event && event.target && event.target.id ? event.target.id : ''
@@ -186,6 +177,9 @@ export default Vue.extend({
     },
     findPos (obj) {
       return obj.offsetTop
+    },
+    testPdf () {
+      this.getPdf(this.resultUrl)
     }
   },
   beforeDestroy () {

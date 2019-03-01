@@ -1,7 +1,21 @@
 // @ts-ignore
 import api from '@molgenis/molgenis-api-client'
 
-const getEntityIdPost = (pollUri: string) => pollUri.split('/').pop()
+const formFields = [{
+  id: 'gender',
+  type: 'enum'
+}, {
+  id: 'eventFile',
+  type: 'file'
+}, {
+  id: 'snpFile',
+  type: 'file'
+}]
+
+const EXP_ENTITY_ID = 'mosaic_exp_data'
+const RESULT_ATTR_ID = 'resultFileId'
+
+const getIdFromUri = (pollUri: string) => pollUri.split('/').pop()
 
 const buildFormData = (data: any, fields: any) => {
   const formData = new FormData()
@@ -37,15 +51,26 @@ const doPost = (uri: string, formData: any, formFields: any) => {
 
   return api.post(uri, options, true).then((result: any) => {
     const createdEntityLocation = result.headers.get('Location')
-    return getEntityIdPost(createdEntityLocation)
+    return getIdFromUri(createdEntityLocation)
   })
 }
 
-const save = (formData: any, formFields: any) => {
-  const entityId = 'mosaic_exp_data'
-  return doPost('/api/v1/' + entityId + '?_method=PUT', formData, formFields)
+const saveExpData = (formData: any) => {
+  return doPost('/api/v1/' + EXP_ENTITY_ID + '?_method=PUT', formData, formFields)
+}
+
+const saveResultFileId = (experimentId: string, resultFileUri: string) => {
+  const options = {
+    body: JSON.stringify(getIdFromUri(resultFileUri)),
+    method: 'PUT'
+  }
+
+  const encodedTableId = encodeURIComponent(EXP_ENTITY_ID)
+  const encodedRowId = encodeURIComponent(experimentId)
+  const encodedColumnId = encodeURIComponent(RESULT_ATTR_ID)
+  return api.post(`/api/v1/${encodedTableId}/${encodedRowId}/${encodedColumnId}`, options)
 }
 
 export {
-  save
+  saveExpData, saveResultFileId
 }
