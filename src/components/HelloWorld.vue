@@ -5,17 +5,20 @@
       <div class="col-md-6">
         <form>
           <div class="form-group">
-            <div class="custom-file">
+            <label for="event-file-container">Regions file</label>
+            <div id="event-file-container" class="custom-file">
               <input type="file" class="custom-file-input" id="eventFile" @change="processFile($event)">
               <label class="custom-file-label" for="eventFile">{{eventFileLabel}}</label>
             </div>
           </div>
           <div class="form-group">
-            <div class="custom-file">
+            <label for="event-file-container">SNPs file</label>
+            <div id="snp-file-container" class="custom-file">
               <input type="file" class="custom-file-input" id="snpFile" @change="processFile($event)">
               <label class="custom-file-label" for="snpFile">{{snpFileLabel}}</label>
             </div>
           </div>
+          <label>Gender</label>
           <div class="form-group">
             <div class="form-check form-check-inline">
               <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="Male" v-model="gender">
@@ -30,7 +33,7 @@
               <label class="form-check-label" for="inlineRadio3">Unknown</label>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary" v-on:click="calculate">Calculate</button>
+          <button type="submit" class="btn btn-primary" v-on:click="calculate" :disabled=running>Calculate</button>
           <!--<button type="button" class="ml-1 btn btn-info" v-on:click="doJob(experimentRowId)" :disabled=running>Test Job</button>-->
           <!--<button type="button" class="ml-1 btn btn-secondary" v-on:click="testPdf" :disabled=running>Test PDF</button>-->
         </form>
@@ -61,10 +64,14 @@
 
     <div class="row">
       <div class="col-md-12">
-        <div v-if="resultUrl">
+        <div v-if="resultUrl && numPages">
           <div id="pdfvuer">
-            <pdf :src="pdfdata" v-for="i in numPages" :key="i" :id="i" :page="i"
-                 :scale="scale" style="width:100%;margin:20px auto;">
+            <pdf :src="resultUrl"  :page="numPages - 1" scale="page-width">
+              <template slot="loading">
+                loading results...
+              </template>
+            </pdf>
+            <pdf :src="resultUrl"  :page="numPages" scale="page-width">
               <template slot="loading">
                 loading results...
               </template>
@@ -90,19 +97,15 @@ export default Vue.extend({
   data () {
     return {
       experimentRowId: null,
-      running: false,
-      interval: null,
-      resultUrl: null, // '/files/5806213a69f14f3db00d81e59d6256af..pdf',
-      eventFileLabel: 'Deviations event file',
-      snpFileLabel: 'B allele frequencies file',
       eventFile: {},
       snpFile: {},
       gender: '',
-      page: 1,
-      numPages: 0,
-      pdfdata: undefined,
-      errors: [],
-      scale: 'page-width'
+      running: false,
+      interval: null,
+      resultUrl: null, // '/files/94a090db097d438086d74777898b7432..pdf',
+      eventFileLabel: 'Select file',
+      snpFileLabel: 'Select file',
+      numPages: 0
     }
   },
   methods: {
@@ -169,10 +172,8 @@ export default Vue.extend({
       }
     },
     getPdf (pdfUrl) {
-      let self = this
-      self.pdfdata = pdfvuer.createLoadingTask(pdfUrl)
-      self.pdfdata.then(pdf => {
-        self.numPages = pdf.numPages
+      pdfvuer.createLoadingTask(pdfUrl).then(pdf => {
+        this.numPages = pdf.numPages
       })
     },
     findPos (obj) {
