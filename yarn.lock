@@ -4480,10 +4480,10 @@ gauge@~2.7.3:
     strip-ansi "^3.0.1"
     wide-align "^1.1.0"
 
-geckodriver@^1.14.1:
-  version "1.14.1"
-  resolved "https://registry.yarnpkg.com/geckodriver/-/geckodriver-1.14.1.tgz#a74fad29f011dc2b1f94517023980ceb6bbabfcf"
-  integrity sha512-4Lia4i5MGd7aLbgHXKAxjWxZ/HqwqX9fr7HfHLKKqRvF3jNzbO/FxnLUfcRKgdMSHXunRfgi/OxfdkHPMyUhnA==
+geckodriver@^1.16.0:
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/geckodriver/-/geckodriver-1.16.0.tgz#ec97f3b175522ce31584af7b42b4ff978e2be170"
+  integrity sha512-im4iInm9n3ntXlsmaoQx5wP1jMP40t+FQBbvlEr5jMCq3ruKcN60/kXn7eYNn0bchpgQf6nXVBy4p8SEaMpI4w==
   dependencies:
     adm-zip "0.4.11"
     bluebird "3.4.6"
@@ -5503,7 +5503,7 @@ is-retry-allowed@^1.0.0:
   resolved "https://registry.yarnpkg.com/is-retry-allowed/-/is-retry-allowed-1.1.0.tgz#11a060568b67339444033d0125a61a20d564fb34"
   integrity sha1-EaBgVotnM5REAz0BJaYaINVk+zQ=
 
-is-stream@^1.0.0, is-stream@^1.1.0:
+is-stream@^1.0.0, is-stream@^1.0.1, is-stream@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/is-stream/-/is-stream-1.1.0.tgz#12d4a3dd4e68e0b79ceb8dbc84173ae80d91ca44"
   integrity sha1-EtSj3U5o4Lec6428hBc66A2RykQ=
