@@ -33,9 +33,7 @@
               <label class="form-check-label" for="inlineRadio3">Unknown</label>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary" v-on:click="calculate" :disabled=running>Calculate</button>
-          <!--<button type="button" class="ml-1 btn btn-info" v-on:click="doJob(experimentRowId)" :disabled=running>Test Job</button>-->
-          <!--<button type="button" class="ml-1 btn btn-secondary" v-on:click="testPdf" :disabled=running>Test PDF</button>-->
+          <button id="calc-btn" type="submit" class="btn btn-primary" v-on:click="calculate" :disabled=running>Calculate</button>
         </form>
       </div>
     </div>
@@ -107,7 +105,7 @@ export default Vue.extend({
       gender: '',
       running: false,
       interval: null,
-      resultUrl: null, // '/files/94a090db097d438086d74777898b7432..pdf',
+      resultUrl: null,
       eventFileLabel: 'Select file',
       snpFileLabel: 'Select file',
       numPages: 0,
@@ -115,10 +113,21 @@ export default Vue.extend({
     }
   },
   methods: {
-    calculate (event) {
-      if (event) {
-        event.preventDefault()
+    processFile (event) {
+      const fileType = event && event.target && event.target.id ? event.target.id : ''
+      const file = event.target.files[0]
+      if (fileType === 'eventFile') {
+        this.eventFile = file
+        this.eventFileLabel = file.name
+      } else if (fileType === 'snpFile') {
+        this.snpFile = file
+        this.snpFileLabel = file.name
+      } else {
+        this.error = 'Error, unknown file type.'
       }
+    },
+    calculate (event) {
+      event.preventDefault()
       this.running = true
 
       const formData = {
@@ -129,21 +138,19 @@ export default Vue.extend({
 
       experimentRepository.saveExpData(formData).then((entityId) => {
         this.experimentRowId = entityId
-        this.doJob(this.experimentRowId)
+        this.runJob(this.experimentRowId)
       }, () => {
         this.error = 'Error; Could not upload experiment data.'
       })
     },
-    doJob (experimentRowId) {
-      this.running = true
-      const pollData = this.pollData
+    runJob (experimentRowId) {
       scriptJobRepository.run(experimentRowId).then((scriptJobId) => {
-        pollData(scriptJobId)
+        this.pollJob(scriptJobId)
       }, () => {
         this.error = 'Error; Could not run job.'
       })
     },
-    pollData (scriptJobId) {
+    pollJob (scriptJobId) {
       this.interval = setInterval(() => {
         scriptJobRepository.poll(scriptJobId).then((pollResponse) => {
           if (pollResponse.status !== 'RUNNING') {
@@ -166,19 +173,6 @@ export default Vue.extend({
     storeResultId (experimentRowId, resultUrl) {
       experimentRepository.saveResultFileId(experimentRowId, resultUrl)
     },
-    processFile (event) {
-      const fileType = event && event.target && event.target.id ? event.target.id : ''
-      const file = event.target.files[0]
-      if (fileType === 'eventFile') {
-        this.eventFile = file
-        this.eventFileLabel = file.name
-      } else if (fileType === 'snpFile') {
-        this.snpFile = file
-        this.snpFileLabel = file.name
-      } else {
-        this.error = 'Error, unknown file type.'
-      }
-    },
     getPdf (pdfUrl) {
       pdfvuer.createLoadingTask(pdfUrl).then(pdf => {
         this.numPages = pdf.numPages
@@ -193,12 +187,6 @@ export default Vue.extend({
       }, () => {
         this.error = 'Error; Could not remove results, please contct the administrator'
       })
-    },
-    findPos (obj) {
-      return obj.offsetTop
-    },
-    testPdf () {
-      this.getPdf(this.resultUrl)
     }
   },
   beforeDestroy () {
