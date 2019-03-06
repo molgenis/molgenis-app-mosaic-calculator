@@ -13,7 +13,8 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest'
   },
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
+    'pdfvuer': '<rootDir>/tests/e2e/mocks/PdfVuerMock.vue'
   },
   snapshotSerializers: [
     'jest-serializer-vue'
