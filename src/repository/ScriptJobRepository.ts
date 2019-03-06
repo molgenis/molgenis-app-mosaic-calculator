@@ -19,9 +19,6 @@ const run = (id: string) => {
   return api.post('/scripts/' + SCRIPT_NAME + '/submit?id=' + id, options).then(
     (response: any) => {
       return response.text().then(getIdFromPollUrI)
-    },
-    (error: any) => {
-      console.error(error)
     }
   )
 }

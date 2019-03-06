@@ -46,7 +46,11 @@
       </div>
     </div>
 
-    <div class="row" v-show="running">
+    <div v-if="error" class="alert alert-danger my-1" role="alert">
+      {{ error }}
+    </div>
+
+    <div class="row" v-show="running && !error">
       <div class="col-md-6">
         <span>
           <i class="fas fa-spinner fa-spin"></i>
@@ -105,7 +109,8 @@ export default Vue.extend({
       resultUrl: null, // '/files/94a090db097d438086d74777898b7432..pdf',
       eventFileLabel: 'Select file',
       snpFileLabel: 'Select file',
-      numPages: 0
+      numPages: 0,
+      error: ''
     }
   },
   methods: {
@@ -124,6 +129,8 @@ export default Vue.extend({
       experimentRepository.saveExpData(formData).then((entityId) => {
         this.experimentRowId = entityId
         this.doJob(this.experimentRowId)
+      }, () => {
+        this.error = 'Error; Could not upload experiment data.'
       })
     },
     doJob (experimentRowId) {
@@ -131,13 +138,13 @@ export default Vue.extend({
       const pollData = this.pollData
       scriptJobRepository.run(experimentRowId).then((scriptJobId) => {
         pollData(scriptJobId)
+      }, () => {
+        this.error = 'Error; Could not run job.'
       })
     },
     pollData (scriptJobId) {
       this.interval = setInterval(() => {
-        console.log('polling')
         scriptJobRepository.poll(scriptJobId).then((pollResponse) => {
-          console.log(pollResponse.log)
           if (pollResponse.status !== 'RUNNING') {
             clearInterval(this.interval)
             this.running = false
@@ -147,16 +154,16 @@ export default Vue.extend({
               this.storeResultId(this.experimentRowId, this.resultUrl)
               this.getPdf(this.resultUrl)
             } else {
-              alert('Error running stuff')
+              this.error = 'Error; Could not run job.'
             }
           }
+        }, () => {
+          this.error = 'Error; Could not run job.'
         })
       }, 1000)
     },
     storeResultId (experimentRowId, resultUrl) {
-      experimentRepository.saveResultFileId(experimentRowId, resultUrl).then((result) => {
-        console.log('result id stored')
-      })
+      experimentRepository.saveResultFileId(experimentRowId, resultUrl)
     },
     processFile (event) {
       const fileType = event && event.target && event.target.id ? event.target.id : ''
@@ -168,12 +175,14 @@ export default Vue.extend({
         this.snpFile = file
         this.snpFileLabel = file.name
       } else {
-        alert('Error file is missing.')
+        this.error = 'Error, unknown file type.'
       }
     },
     getPdf (pdfUrl) {
       pdfvuer.createLoadingTask(pdfUrl).then(pdf => {
         this.numPages = pdf.numPages
+      }, () => {
+        this.error = 'Error; Could not render results to page .'
       })
     },
     findPos (obj) {
