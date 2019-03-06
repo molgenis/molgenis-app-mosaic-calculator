@@ -63,6 +63,7 @@
     <div v-if="resultUrl" class="row">
       <div class="col-md-6">
         <a class="btn btn-primary" :href=resultUrl>Download pdf</a>
+        <button type="button" class="ml-1 btn btn-info" v-on:click="removeData(experimentRowId, resultUrl)">Clear all data</button>
       </div>
     </div>
 
@@ -183,6 +184,14 @@ export default Vue.extend({
         this.numPages = pdf.numPages
       }, () => {
         this.error = 'Error; Could not render results to page .'
+      })
+    },
+    removeData (experimentRowId, resultUrl) {
+      return experimentRepository.removeData(experimentRowId, resultUrl).then(() => {
+        this.resultUrl = ''
+        this.experimentRowId = ''
+      }, () => {
+        this.error = 'Error; Could not remove results, please contct the administrator'
       })
     },
     findPos (obj) {

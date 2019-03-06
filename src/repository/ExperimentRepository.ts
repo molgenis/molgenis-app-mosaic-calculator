@@ -13,6 +13,7 @@ const formFields = [{
 }]
 
 const EXP_ENTITY_ID = 'mosaic_exp_data'
+const RESULT_FILE_ENTITY_ID = 'sys_FileMeta'
 const RESULT_ATTR_ID = 'resultFileId'
 
 const getIdFromUri = (pollUri: string) => pollUri.split('/').pop()
@@ -71,6 +72,24 @@ const saveResultFileId = (experimentId: string, resultFileUri: string) => {
   return api.post(`/api/v1/${encodedTableId}/${encodedRowId}/${encodedColumnId}`, options)
 }
 
+const deleteResultFile = (resultFileId: string) => {
+  const resultFile = encodeURIComponent(resultFileId)
+  const fileEntity = encodeURIComponent(RESULT_FILE_ENTITY_ID)
+  return api.delete_(`/api/v1/${fileEntity}/${resultFile}`)
+}
+
+const removeData = (experimentId: string, resultFileUri: string) => {
+  const resultFileId = getIdFromUri(resultFileUri)
+  if (resultFileId === undefined) {
+    return Promise.reject(new Error('Invalid result file uri.'))
+  }
+  return deleteResultFile(resultFileId).then(() => {
+    const encodedTableId = encodeURIComponent(EXP_ENTITY_ID)
+    const encodedRowId = encodeURIComponent(experimentId)
+    return api.delete_(`/api/v1/${encodedTableId}/${encodedRowId}`)
+  })
+}
+
 export {
-  saveExpData, saveResultFileId
+  saveExpData, saveResultFileId, removeData
 }
