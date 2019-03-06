@@ -1,18 +1,18 @@
 <template>
   <div id="app">
     <!--<img alt="Vue logo" src="./assets/logo.png">-->
-    <HelloWorld />
+    <MosaicView />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import HelloWorld from './components/HelloWorld.vue'
+import MosaicView from './components/MosaicView.vue'
 
 export default Vue.extend({
   name: 'app',
   components: {
-    HelloWorld
+    MosaicView
   }
 })
 </script>

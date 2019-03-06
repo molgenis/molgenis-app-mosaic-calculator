@@ -94,7 +94,7 @@ import * as experimentRepository from '@/repository/ExperimentRepository'
 import * as scriptJobRepository from '@/repository/ScriptJobRepository'
 
 export default Vue.extend({
-  name: 'HelloWorld',
+  name: 'MosaicView',
   components: {
     pdf: pdfvuer
   },
