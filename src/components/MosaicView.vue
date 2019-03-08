@@ -33,7 +33,7 @@
               <label class="form-check-label" for="inlineRadio3">Unknown</label>
             </div>
           </div>
-          <button id="calc-btn" type="submit" class="btn btn-primary" v-on:click="calculate" :disabled=running>Calculate</button>
+          <button id="calc-btn" type="submit" class="btn btn-primary" v-on:click="calculate" :disabled=isRunning>Calculate</button>
         </form>
       </div>
     </div>
@@ -48,12 +48,12 @@
       {{ error }}
     </div>
 
-    <div class="row" v-show="running && !error">
+    <div class="row" v-show="isRunning && !error">
       <div class="col-md-6">
         <span>
           <i class="fas fa-spinner fa-spin"></i>
-          <span v-show="!experimentRowId"> Uploading data ...</span>
-          <span v-show="experimentRowId"> Running analysis, this can take some time ...</span>
+          <span v-show="!experimentId"> Uploading data ...</span>
+          <span v-show="experimentId"> Running analysis, this can take some time ...</span>
         </span>
       </div>
     </div>
@@ -61,7 +61,7 @@
     <div v-if="resultUrl" class="row">
       <div class="col-md-6">
         <a class="btn btn-primary" :href=resultUrl>Download pdf</a>
-        <button type="button" class="ml-1 btn btn-info" v-on:click="removeData(experimentRowId, resultUrl)">Clear all data</button>
+        <button type="button" class="ml-1 btn btn-info" v-on:click="removeData(experimentId, resultUrl)">Clear all data</button>
       </div>
     </div>
 
@@ -88,6 +88,7 @@
 
 <script>
 import Vue from 'vue'
+import { mapState } from 'vuex'
 import pdfvuer from 'pdfvuer'
 import * as experimentRepository from '@/repository/ExperimentRepository'
 import * as scriptJobRepository from '@/repository/ScriptJobRepository'
@@ -99,18 +100,17 @@ export default Vue.extend({
   },
   data () {
     return {
-      experimentRowId: null,
       eventFile: {},
       snpFile: {},
       gender: '',
-      running: false,
       interval: null,
-      resultUrl: null,
       eventFileLabel: 'Select file',
       snpFileLabel: 'Select file',
-      numPages: 0,
-      error: ''
+      numPages: 0
     }
+  },
+  computed: {
+    ...mapState(['experimentId', 'isRunning', 'resultUrl', 'error'])
   },
   methods: {
     processFile (event) {
@@ -123,12 +123,12 @@ export default Vue.extend({
         this.snpFile = file
         this.snpFileLabel = file.name
       } else {
-        this.error = 'Error, unknown file type.'
+        this.$store.commit('error', 'Error, unknown file type.')
       }
     },
     calculate (event) {
       event.preventDefault()
-      this.running = true
+      this.$store.commit('isRunning', true)
 
       const formData = {
         gender: this.gender,
@@ -137,17 +137,17 @@ export default Vue.extend({
       }
 
       experimentRepository.saveExpData(formData).then((entityId) => {
-        this.experimentRowId = entityId
-        this.runJob(this.experimentRowId)
+        this.$store.commit('experimentId', entityId)
+        this.runJob(this.experimentId)
       }, () => {
-        this.error = 'Error; Could not upload experiment data.'
+        this.$store.commit('error', 'Error; Could not upload experiment data.')
       })
     },
-    runJob (experimentRowId) {
-      scriptJobRepository.run(experimentRowId).then((scriptJobId) => {
+    runJob (experimentId) {
+      scriptJobRepository.run(experimentId).then((scriptJobId) => {
         this.pollJob(scriptJobId)
       }, () => {
-        this.error = 'Error; Could not run job.'
+        this.$store.commit('error', 'Error; Could not run job.')
       })
     },
     pollJob (scriptJobId) {
@@ -155,14 +155,13 @@ export default Vue.extend({
         scriptJobRepository.poll(scriptJobId).then((pollResponse) => {
           if (pollResponse.status !== 'RUNNING') {
             clearInterval(this.interval)
-            this.running = false
-
+            this.$store.commit('isRunning', false)
             if (pollResponse.status === 'SUCCESS') {
-              this.resultUrl = pollResponse.resultUrl
-              this.storeResultId(this.experimentRowId, this.resultUrl)
+              this.$store.commit('resultUrl', pollResponse.resultUrl)
+              this.storeResultId(this.experimentId, this.resultUrl)
               this.getPdf(this.resultUrl)
             } else {
-              this.error = 'Error; Could not run job.'
+              this.$store.commit('error', 'Error; Could not run job.')
             }
           }
         }, () => {
@@ -170,22 +169,22 @@ export default Vue.extend({
         })
       }, 1000)
     },
-    storeResultId (experimentRowId, resultUrl) {
-      experimentRepository.saveResultFileId(experimentRowId, resultUrl)
+    storeResultId (experimentId, resultUrl) {
+      experimentRepository.saveResultFileId(experimentId, resultUrl)
     },
     getPdf (pdfUrl) {
       pdfvuer.createLoadingTask(pdfUrl).then(pdf => {
         this.numPages = pdf.numPages
       }, () => {
-        this.error = 'Error; Could not render results to page .'
+        this.$store.commit('error', 'Error; Could not render results to page .')
       })
     },
-    removeData (experimentRowId, resultUrl) {
-      return experimentRepository.removeData(experimentRowId, resultUrl).then(() => {
-        this.resultUrl = ''
-        this.experimentRowId = ''
+    removeData (experimentId, resultUrl) {
+      return experimentRepository.removeData(experimentId, resultUrl).then(() => {
+        this.$store.commit('resultUrl', '')
+        this.$store.commit('experimentId', '')
       }, () => {
-        this.error = 'Error; Could not remove results, please contct the administrator'
+        this.$store.commit('error', 'Error; Could not remove results, please contct the administrator')
       })
     }
   },
