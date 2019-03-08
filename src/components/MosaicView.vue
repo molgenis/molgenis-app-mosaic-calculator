@@ -58,9 +58,9 @@
       </div>
     </div>
 
-    <div v-if="resultUrl" class="row">
+    <div class="row">
       <div class="col-md-6">
-        <a class="btn btn-primary" :href=resultUrl>Download pdf</a>
+        <a class="btn btn-primary" href="/files/840dd8f0db6d4f4183283fe6142d8703..pdf" target="_blank">Download pdf</a>
         <button type="button" class="ml-1 btn btn-info" v-on:click="removeData(experimentId, resultUrl)">Clear all data</button>
       </div>
     </div>
@@ -90,8 +90,7 @@
 import Vue from 'vue'
 import { mapState } from 'vuex'
 import pdfvuer from 'pdfvuer'
-import * as experimentRepository from '@/repository/ExperimentRepository'
-import * as scriptJobRepository from '@/repository/ScriptJobRepository'
+import * as jobService from '@/service/JobService'
 
 export default Vue.extend({
   name: 'MosaicView',
@@ -110,7 +109,10 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapState(['experimentId', 'isRunning', 'resultUrl', 'error'])
+    ...mapState(['experimentId', 'isRunning', 'resultUrl', 'error']),
+    downloadUrl () {
+      return 'files/840dd8f0db6d4f4183283fe6142d8703..pdf'
+    }
   },
   methods: {
     processFile (event) {
@@ -136,60 +138,23 @@ export default Vue.extend({
         snpFile: this.snpFile
       }
 
-      experimentRepository.saveExpData(formData).then((entityId) => {
-        this.$store.commit('experimentId', entityId)
-        this.runJob(this.experimentId)
-      }, () => {
-        this.$store.commit('error', 'Error; Could not upload experiment data.')
+      this.$store.dispatch('runExperiment', formData).then((resultUrl) => {
+        this.getPdf()
       })
     },
-    runJob (experimentId) {
-      scriptJobRepository.run(experimentId).then((scriptJobId) => {
-        this.pollJob(scriptJobId)
-      }, () => {
-        this.$store.commit('error', 'Error; Could not run job.')
-      })
-    },
-    pollJob (scriptJobId) {
-      this.interval = setInterval(() => {
-        scriptJobRepository.poll(scriptJobId).then((pollResponse) => {
-          if (pollResponse.status !== 'RUNNING') {
-            clearInterval(this.interval)
-            this.$store.commit('isRunning', false)
-            if (pollResponse.status === 'SUCCESS') {
-              this.$store.commit('resultUrl', pollResponse.resultUrl)
-              this.storeResultId(this.experimentId, this.resultUrl)
-              this.getPdf(this.resultUrl)
-            } else {
-              this.$store.commit('error', 'Error; Could not run job.')
-            }
-          }
-        }, () => {
-          this.error = 'Error; Could not run job.'
-        })
-      }, 1000)
-    },
-    storeResultId (experimentId, resultUrl) {
-      experimentRepository.saveResultFileId(experimentId, resultUrl)
-    },
-    getPdf (pdfUrl) {
-      pdfvuer.createLoadingTask(pdfUrl).then(pdf => {
+    getPdf () {
+      pdfvuer.createLoadingTask(this.resultUrl).then(pdf => {
         this.numPages = pdf.numPages
       }, () => {
         this.$store.commit('error', 'Error; Could not render results to page .')
       })
     },
-    removeData (experimentId, resultUrl) {
-      return experimentRepository.removeData(experimentId, resultUrl).then(() => {
-        this.$store.commit('resultUrl', '')
-        this.$store.commit('experimentId', '')
-      }, () => {
-        this.$store.commit('error', 'Error; Could not remove results, please contct the administrator')
-      })
+    removeData () {
+      this.$store.dispatch('removeData')
     }
   },
   beforeDestroy () {
-    clearInterval(this.interval)
+    jobService.cancelPolling()
   }
 })
 </script>

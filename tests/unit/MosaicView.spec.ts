@@ -19,14 +19,12 @@ const localVue = createLocalVue()
 localVue.use(Vuex)
 
 describe('MosaicView.vue', () => {
-
   let store: any
 
   beforeEach(() => {
     store = new Vuex.Store({
     })
   })
-
 
   describe('when the components is mounted', () => {
     it('should have the name MosaicView', () => {
