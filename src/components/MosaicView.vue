@@ -60,7 +60,7 @@
 
     <div class="row">
       <div class="col-md-6">
-        <a class="btn btn-primary" href="/files/840dd8f0db6d4f4183283fe6142d8703..pdf" target="_blank">Download pdf</a>
+        <a class="btn btn-primary" :href="resultUrl">Download pdf</a>
         <button type="button" class="ml-1 btn btn-info" v-on:click="removeData(experimentId, resultUrl)">Clear all data</button>
       </div>
     </div>
@@ -109,10 +109,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    ...mapState(['experimentId', 'isRunning', 'resultUrl', 'error']),
-    downloadUrl () {
-      return 'files/840dd8f0db6d4f4183283fe6142d8703..pdf'
-    }
+    ...mapState(['experimentId', 'isRunning', 'resultUrl', 'error'])
   },
   methods: {
     processFile (event) {
