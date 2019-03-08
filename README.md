@@ -25,7 +25,9 @@ The user can remove data and result by clicking the 'clear all data' button.
 - Add script via molgenis scrips plugin 
 - Setup nightly cleaning job using scrips/mosaic_cleanup.R
 
-### Project setup
+##Development
+
+#### Project setup
 ```
 yarn install
 ```
