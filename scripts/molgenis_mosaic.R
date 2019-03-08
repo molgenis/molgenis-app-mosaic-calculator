@@ -1,4 +1,4 @@
-library("molgenisRApi")
+library("molgenisApi")
 library("mosaicr")
 library("rjson")
 library("RCurl")
