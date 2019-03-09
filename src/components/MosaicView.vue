@@ -3,7 +3,7 @@
     <h1>Mosaic App</h1>
     <div class="row">
       <div class="col-md-6">
-        <form>
+        <form v-on:submit.prevent="calculate">
           <div class="form-group">
             <label for="event-file-container">Regions file</label>
             <div id="event-file-container" class="custom-file">
@@ -33,7 +33,7 @@
               <label class="form-check-label" for="inlineRadio3">Unknown</label>
             </div>
           </div>
-          <button id="calc-btn" type="submit" class="btn btn-primary" v-on:click="calculate" :disabled=isRunning>Calculate</button>
+          <button id="calc-btn" type="submit" class="btn btn-primary" :disabled=isRunning>Calculate</button>
         </form>
       </div>
     </div>
@@ -61,7 +61,7 @@
     <div v-show="resultUrl" class="row">
       <div class="col-md-6">
         <a class="btn btn-primary" :href="resultUrl">Download pdf</a>
-        <button type="button" class="ml-1 btn btn-info" v-on:click="removeData(experimentId, resultUrl)">Clear all data</button>
+        <button id="clear-btn" type="button" class="ml-1 btn btn-info" v-on:click="removeData">Clear all data</button>
       </div>
     </div>
 
@@ -122,8 +122,7 @@ export default Vue.extend({
         this.snpFileLabel = file.name
       }
     },
-    calculate (event) {
-      event.preventDefault()
+    calculate () {
       this.$store.commit('isRunning', true)
 
       const formData = {
@@ -132,15 +131,13 @@ export default Vue.extend({
         snpFile: this.snpFile
       }
 
-      this.$store.dispatch('runExperiment', formData).then((resultUrl) => {
-        this.getPdf()
-      })
+      this.$store.dispatch('runExperiment', formData).then(this.getPdf)
     },
     getPdf () {
       pdfvuer.createLoadingTask(this.resultUrl).then(pdf => {
         this.numPages = pdf.numPages
       }, () => {
-        this.$store.commit('error', 'Error; Could not render results to page .')
+        this.$store.commit('error', 'Error; Could not render results to page.')
       })
     },
     removeData () {

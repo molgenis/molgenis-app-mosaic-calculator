@@ -1,5 +1,11 @@
 module.exports = {
   collectCoverage: true,
+  coveragePathIgnorePatterns: ['/node_modules/', '/tests/'],
+  collectCoverageFrom: [
+    'src/**/*.{vue,ts}',
+    '!src/App.vue',
+    '!src/main.ts'
+  ],
   moduleFileExtensions: [
     'js',
     'jsx',
@@ -15,7 +21,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    'pdfvuer': '<rootDir>/tests/e2e/mocks/PdfVuerMock.vue'
+    'pdfvuer': '<rootDir>/tests/unit/mocks/PdfVuerMock.vue'
   },
   snapshotSerializers: [
     'jest-serializer-vue'
