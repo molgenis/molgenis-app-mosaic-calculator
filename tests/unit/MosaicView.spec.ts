@@ -33,22 +33,35 @@ describe('MosaicView.vue', () => {
     })
   })
 
-  // describe('when clicking the calculate button', () => {
-  //   it('saveExpData should be called, and then the run called passing the experiment id', () => {
-  //     const formData = {
-  //       gender: '',
-  //       eventFile: {},
-  //       snpFile: {}
-  //     };
-  //
-  //     (experimentRepository.saveExpData as jest.Mock).mockResolvedValue('exp-id');
-  //     (scriptJobRepository.run as jest.Mock).mockResolvedValue('script-job-id')
-  //
-  //     const wrapper = shallowMount(MosaicView, { store, localVue })
-  //     wrapper.find('#calc-btn').trigger('click')
-  //
-  //     expect(experimentRepository.saveExpData).toBeCalledWith(formData)
-  //     expect(scriptJobRepository.run).toBeCalled()
-  //   })
-  // })
+  describe('handleFileSelect', () => {
+    it('given the event file should set the filedata and fileName', () => {
+      const wrapper = shallowMount(MosaicView, { store, localVue })
+      const mockFileEvent = {
+        target: {
+          id: 'eventFile',
+          files: [{file: {name:'event-file-name', data: 'mockdata'}}]
+        }
+      }
+      // @ts-ignore
+      wrapper.vm.handleFileSelect(mockFileEvent)
+      // @ts-ignore
+      expect(wrapper.vm.eventFile).toEqual({file: {name:'event-file-name', data: 'mockdata'}})
+    })
+
+    it('given the event file should set the snpFile and fileName', () => {
+      const wrapper = shallowMount(MosaicView, { store, localVue })
+      const mockFileEvent = {
+        target: {
+          id: 'snpFile',
+          files: [{file: {name:'snp-file-name', data: 'mockdata'}}]
+        }
+      }
+      // @ts-ignore
+      wrapper.vm.handleFileSelect(mockFileEvent)
+      // @ts-ignore
+      expect(wrapper.vm.snpFile).toEqual({file: {name:'snp-file-name', data: 'mockdata'}})
+    })
+  })
+
+
 })

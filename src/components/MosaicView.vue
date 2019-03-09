@@ -7,14 +7,14 @@
           <div class="form-group">
             <label for="event-file-container">Regions file</label>
             <div id="event-file-container" class="custom-file">
-              <input type="file" class="custom-file-input" id="eventFile" @change="processFile($event)">
+              <input type="file" class="custom-file-input" id="eventFile" @change="handleFileSelect($event)">
               <label class="custom-file-label" for="eventFile">{{eventFileLabel}}</label>
             </div>
           </div>
           <div class="form-group">
             <label for="event-file-container">SNPs file</label>
             <div id="snp-file-container" class="custom-file">
-              <input type="file" class="custom-file-input" id="snpFile" @change="processFile($event)">
+              <input type="file" class="custom-file-input" id="snpFile" @change="handleFileSelect($event)">
               <label class="custom-file-label" for="snpFile">{{snpFileLabel}}</label>
             </div>
           </div>
@@ -58,7 +58,7 @@
       </div>
     </div>
 
-    <div class="row">
+    <div v-show="resultUrl" class="row">
       <div class="col-md-6">
         <a class="btn btn-primary" :href="resultUrl">Download pdf</a>
         <button type="button" class="ml-1 btn btn-info" v-on:click="removeData(experimentId, resultUrl)">Clear all data</button>
@@ -103,8 +103,8 @@ export default Vue.extend({
       snpFile: {},
       gender: '',
       interval: null,
-      eventFileLabel: 'Select file',
-      snpFileLabel: 'Select file',
+      eventFileLabel: 'Choose file',
+      snpFileLabel: 'Choose file',
       numPages: 0
     }
   },
@@ -112,17 +112,14 @@ export default Vue.extend({
     ...mapState(['experimentId', 'isRunning', 'resultUrl', 'error'])
   },
   methods: {
-    processFile (event) {
-      const fileType = event && event.target && event.target.id ? event.target.id : ''
+    handleFileSelect (event) {
       const file = event.target.files[0]
-      if (fileType === 'eventFile') {
+      if (event.target.id === 'eventFile') {
         this.eventFile = file
         this.eventFileLabel = file.name
-      } else if (fileType === 'snpFile') {
+      } else {
         this.snpFile = file
         this.snpFileLabel = file.name
-      } else {
-        this.$store.commit('error', 'Error, unknown file type.')
       }
     },
     calculate (event) {
