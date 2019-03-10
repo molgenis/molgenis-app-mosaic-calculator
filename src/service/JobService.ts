@@ -17,11 +17,11 @@ const pollJob = (scriptJobId: string) => {
           if (pollResponse.status === 'SUCCESS') {
             resolve(pollResponse.resultUrl)
           } else {
-            reject(new Error('Could not run job.'))
+            reject(Error('Could not run job.'))
           }
         }
       }, () => {
-        reject(new Error('Could not run job.'))
+        reject(Error('Could not run job.'))
       })
     }, 1000)
   })
