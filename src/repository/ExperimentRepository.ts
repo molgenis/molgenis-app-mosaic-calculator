@@ -49,7 +49,8 @@ const deleteResultFile = (resultFileId: string) => {
 
 const removeData = (experimentId: string, resultFileUri: string) => {
   const resultFileId = getIdFromUri(resultFileUri)
-  if (resultFileId === undefined) {
+
+  if (!resultFileId) {
     return Promise.reject(Error('Invalid result file uri.'))
   }
   return deleteResultFile(resultFileId).then(() => {
