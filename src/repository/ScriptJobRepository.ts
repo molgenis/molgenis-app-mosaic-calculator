@@ -1,7 +1,7 @@
 // @ts-ignore
 import api from '@molgenis/molgenis-api-client'
 
-const SCRIPT_NAME = 'Mosaic-4'
+const SCRIPT_NAME = 'molgenis_mosaic'
 
 const getIdFromPollUrI = (pollUri: string) => pollUri.split('/').pop()
 
