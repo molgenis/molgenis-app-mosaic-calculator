@@ -64,10 +64,22 @@ describe('store', () => {
         })
       })
 
-      it('should set error on fail', (done) => {
+      it('should set error on upload fail', (done) => {
         const mockData = { mock: 'data' }
         // @ts-ignore
         experimentRepository.saveExpData.mockRejectedValue(undefined)
+        store.dispatch('runExperiment', mockData).then(() => {
+          expect(store.state.error).toEqual('Error; Failed upload experiment data.')
+          done()
+        })
+      })
+
+      it('should set error on run job fail', (done) => {
+        const mockData = { mock: 'data' }
+        // @ts-ignore
+        experimentRepository.saveExpData.mockResolvedValue('experiment-id')
+        // @ts-ignore
+        jobService.runJob.mockRejectedValue(undefined)
         store.dispatch('runExperiment', mockData).then(() => {
           expect(store.state.error).toEqual('Error; Failed to run experiment.')
           done()

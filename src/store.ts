@@ -34,9 +34,11 @@ export default new Vuex.Store({
           commit('isRunning', false)
           commit('resultUrl', resultUrl)
           return experimentRepository.saveResultFileId(experimentId, resultUrl)
+        }, () => {
+          commit('error', 'Error; Failed to run experiment.')
         })
       }, () => {
-        commit('error', 'Error; Failed to run experiment.')
+        commit('error', 'Error; Failed upload experiment data.')
       })
     },
     removeData ({ commit, state }) {
