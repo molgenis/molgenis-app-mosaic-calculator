@@ -1,7 +1,7 @@
 # Mosaic app data model
 
 - Upload the data model emx file using the 'Advanced data import' plugin, commander or API.
-- Use the 'Meta data manager' plugin to mark the file attributes (eventFile, snpFile) as 'Cascade delete'.
+- Use the 'Meta data manager' plugin to mark the file attributes (event data, snp BAF data) as 'Cascade delete'.
  (This work around is needed as 'cascade delete' is not part of emx at the moment)
 - Use the scripts plugin, commander or api to import/create the analysis scripts found in the scrips folder. 
     - The molgenis_mosaic.R file should be stored with the following settings
