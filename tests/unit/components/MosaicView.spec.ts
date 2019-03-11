@@ -35,7 +35,7 @@ describe('MosaicView.vue', () => {
     }
 
     getters = {
-      isRunning: jest.fn(),
+      isRunning: jest.fn()
     }
 
     store = new Vuex.Store({
@@ -56,13 +56,13 @@ describe('MosaicView.vue', () => {
       const mockFileEvent = {
         target: {
           id: 'eventFile',
-          files: [{file: {name:'event-file-name', data: 'mockdata'}}]
+          files: [{ file: { name: 'event-file-name', data: 'mockdata' } }]
         }
       }
       // @ts-ignore
       wrapper.vm.handleFileSelect(mockFileEvent)
       // @ts-ignore
-      expect(wrapper.vm.eventFile).toEqual({file: {name:'event-file-name', data: 'mockdata'}})
+      expect(wrapper.vm.eventFile).toEqual({ file: { name: 'event-file-name', data: 'mockdata' } })
     })
 
     it('given the event file should set the snpFile and fileName', () => {
@@ -70,19 +70,19 @@ describe('MosaicView.vue', () => {
       const mockFileEvent = {
         target: {
           id: 'snpFile',
-          files: [{file: {name:'snp-file-name', data: 'mockdata'}}]
+          files: [{ file: { name: 'snp-file-name', data: 'mockdata' } }]
         }
       }
       // @ts-ignore
       wrapper.vm.handleFileSelect(mockFileEvent)
       // @ts-ignore
-      expect(wrapper.vm.snpFile).toEqual({file: {name:'snp-file-name', data: 'mockdata'}})
+      expect(wrapper.vm.snpFile).toEqual({ file: { name: 'snp-file-name', data: 'mockdata' } })
     })
   })
 
   describe('calculate', () => {
     it('should dispatch the calculate action', () => {
-      const wrapper = shallowMount(MosaicView, { store, localVue})
+      const wrapper = shallowMount(MosaicView, { store, localVue })
       wrapper.find('#calc-btn').trigger('submit')
       expect(actions.runExperiment).toHaveBeenCalled()
       // @ts-ignore
@@ -93,14 +93,14 @@ describe('MosaicView.vue', () => {
   describe('getPdf', () => {
     it('should set an error is the pdf load fails', () => {
       store.state.resultUrl = 'invalidUrl'
-      const wrapper = shallowMount(MosaicView, { store, localVue})
+      const wrapper = shallowMount(MosaicView, { store, localVue })
       wrapper.find('#calc-btn').trigger('submit')
     })
   })
 
   describe('removeData', () => {
     it('should dispatch the calculate action', () => {
-      const wrapper = shallowMount(MosaicView, { store, localVue})
+      const wrapper = shallowMount(MosaicView, { store, localVue })
       wrapper.find('#clear-btn').trigger('click')
       expect(actions.removeData).toHaveBeenCalled()
     })
@@ -108,11 +108,9 @@ describe('MosaicView.vue', () => {
 
   describe('beforeDestroy', () => {
     it('should dispatch the clear interval action', () => {
-      const wrapper = shallowMount(MosaicView, { store, localVue})
+      const wrapper = shallowMount(MosaicView, { store, localVue })
       wrapper.destroy()
       expect(jobService.cancelPolling).toHaveBeenCalled()
     })
   })
-
-
 })

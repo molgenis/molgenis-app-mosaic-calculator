@@ -8,7 +8,6 @@ jest.mock('@molgenis/molgenis-api-client', () => ({
 }))
 
 describe('ScriptJobRepository', () => {
-
   describe('poll', () => {
     it('should use the api to poll the script job', () => {
       const pollId = 'poll-id'
@@ -21,7 +20,7 @@ describe('ScriptJobRepository', () => {
     it('should use the api to run the script', (done) => {
       const experimentId = 'experiment-id'
 
-      api.post.mockResolvedValue({text: () => Promise.resolve('some/poll-id')})
+      api.post.mockResolvedValue({ text: () => Promise.resolve('some/poll-id') })
 
       scriptJobRepository.run(experimentId).then((result: any) => {
         expect(result).toMatch('poll-id')
@@ -30,5 +29,4 @@ describe('ScriptJobRepository', () => {
       expect(api.post).toHaveBeenCalled()
     })
   })
-
 })

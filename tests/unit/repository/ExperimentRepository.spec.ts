@@ -8,14 +8,12 @@ jest.mock('@molgenis/molgenis-api-client', () => ({
 }))
 
 describe('ExperimentRepository', () => {
-
   describe('saveExpData', () => {
     it('should call the api to store the server', () => {
-
       const expData = {
         gender: 'Female',
         eventFile: new Blob(),
-        snpFile: new Blob(),
+        snpFile: new Blob()
       }
 
       api.post.mockResolvedValue({
@@ -62,7 +60,7 @@ describe('ExperimentRepository', () => {
       const experimentId = 'exp-id'
       const invalidUri = ''
 
-      experimentRepository.removeData(experimentId, invalidUri).catch( (e:any) => {
+      experimentRepository.removeData(experimentId, invalidUri).catch((e:any) => {
         expect(e.message).toMatch('Invalid result file uri.')
         done()
       })

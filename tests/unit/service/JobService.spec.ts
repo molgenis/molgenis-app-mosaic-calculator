@@ -7,7 +7,6 @@ jest.mock('@/repository/ScriptJobRepository', () => ({
 }))
 
 describe('JobService', () => {
-
   describe('runJob', () => {
     it('should call the script and start polling', (done) => {
       // @ts-ignore
@@ -22,7 +21,7 @@ describe('JobService', () => {
       /*
        * jest mock timers has issues mocking setInterval, just use timeout as workaround :(
        */
-      setTimeout(() =>{
+      setTimeout(() => {
         expect(scriptJobRepository.poll).toHaveBeenCalled()
         done()
       }, 2000)
@@ -33,18 +32,16 @@ describe('JobService', () => {
       scriptJobRepository.run.mockResolvedValue('scriptJobId')
       // @ts-ignore
       scriptJobRepository.poll.mockResolvedValue({
-        status: 'ERROR',
+        status: 'ERROR'
       })
 
-
-      jobService.runJob('exp-id').catch( (e:any) => {
+      jobService.runJob('exp-id').catch((e:any) => {
         expect(e.message).toMatch('Could not run job.')
         done()
       })
 
       setTimeout(() => {}, 2000)
-      }
+    }
     )
   })
-
 })

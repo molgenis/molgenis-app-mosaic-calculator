@@ -9,11 +9,10 @@ jest.mock('@/repository/ExperimentRepository', () => ({
 }))
 
 jest.mock('@/service/JobService', () => ({
-  runJob: jest.fn(),
+  runJob: jest.fn()
 }))
 
 describe('store', () => {
-
   beforeEach(() => {
     store.commit('experimentId', null)
     store.commit('isRunning', false)
@@ -22,10 +21,10 @@ describe('store', () => {
   })
 
   describe('initial state', () => {
-    it('experimentId', () => {expect(store.state.experimentId).toEqual(null)})
-    it('isRunning', () => {expect(store.state.isRunning).toEqual(false)})
-    it('resultUrl', () => {expect(store.state.resultUrl).toEqual(null)})
-    it('error', () => {expect(store.state.error).toEqual('')})
+    it('experimentId', () => { expect(store.state.experimentId).toEqual(null) })
+    it('isRunning', () => { expect(store.state.isRunning).toEqual(false) })
+    it('resultUrl', () => { expect(store.state.resultUrl).toEqual(null) })
+    it('error', () => { expect(store.state.error).toEqual('') })
   })
 
   describe('mutatons', () => {
@@ -50,7 +49,7 @@ describe('store', () => {
   describe('actions', () => {
     describe('runExperiment', () => {
       it('should save the data', (done) => {
-        const mockData = {mock: 'data'}
+        const mockData = { mock: 'data' }
         // @ts-ignore
         experimentRepository.saveExpData.mockResolvedValue('experiment-id')
         // @ts-ignore
@@ -66,7 +65,7 @@ describe('store', () => {
       })
 
       it('should set error on fail', (done) => {
-        const mockData = {mock: 'data'}
+        const mockData = { mock: 'data' }
         // @ts-ignore
         experimentRepository.saveExpData.mockRejectedValue(undefined)
         store.dispatch('runExperiment', mockData).then(() => {
@@ -101,6 +100,4 @@ describe('store', () => {
       })
     })
   })
-
 })
-
