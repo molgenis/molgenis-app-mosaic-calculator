@@ -2,5 +2,13 @@
 
 - Upload the data model emx file using the 'Advanced data import' plugin, commander or API.
 - Use the 'Meta data manager' plugin to mark the file attributes (eventFile, snpFile) as 'Cascade delete'.
-- Use the scripts plugin, commander or api to update the analysis scripts found in the scrips folder. 
+ (This work around is needed as 'cascade delete' is not part of emx at the moment)
+- Use the scripts plugin, commander or api to import/create the analysis scripts found in the scrips folder. 
+    - The molgenis_mosaic.R file should be stored with the following settings
+        - Name: molgenis_mosaic
+        - Type: R
+        - Content: molgenis_mosaic.R file content
+        - Generate security token; yes
+        - Result file extension: pdf
+        - Parameters: id 
 - Setup a cleanup job using the 'Scheduled jobs' plugin to clear the data at a set interval (nightly).   
