@@ -1,5 +1,6 @@
 library("molgenisApi")
 library("mosaicr")
+library("httr")
 library("rjson")
 library("RCurl")
 start.time <- Sys.time()
@@ -14,12 +15,12 @@ id <- row.data$id
 gender <- row.data$gender
 
 snp.file.url <- row.data$snpFile$url
-snp.file.url <- gsub("http://localhost", "host.docker.internal", snp.file.url)
+#snp.file.url <- gsub("http://localhost", "host.docker.internal", snp.file.url)
 snp.file.response <- getURL(paste0(snp.file.url, "?molgenis-token=", token))
 snpm.data <- read.table(textConnection(snp.file.response), skip = 9, header = T, sep = "\t")[,c(3,4,6)]
 
 event.file.url <- row.data$eventFile$url
-event.file.url <- gsub("http://localhost", "host.docker.internal", event.file.url)
+#event.file.url <- gsub("http://localhost", "host.docker.internal", event.file.url)
 event.file.response <- getURL(paste0(event.file.url, "?molgenis-token=", token))
 event.data <- read.table(textConnection(event.file.response), header = T, sep = "\t")
 

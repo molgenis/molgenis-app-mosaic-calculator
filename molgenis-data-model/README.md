@@ -8,6 +8,7 @@
         - Name: molgenis_mosaic
         - Type: R
         - Content: molgenis_mosaic.R file content
+            - Important replace the `mol.url` variable with the molgenis server uri (for example: 'https://molgenis.org')
         - Generate security token; yes
         - Result file extension: pdf
         - Parameters: id 
