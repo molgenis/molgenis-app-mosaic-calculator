@@ -2057,6 +2057,11 @@ bser@^2.0.0:
   dependencies:
     node-int64 "^0.4.0"
 
+buffer-crc32@~0.2.3:
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/buffer-crc32/-/buffer-crc32-0.2.13.tgz#0d333e3f00eac50aa1454abd30ef8c2a5d9a7242"
+  integrity sha1-DTM+PwDqxQqhRUq9MO+MKl2ackI=
+
 buffer-from@1.x, buffer-from@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.1.tgz#32713bc028f75c02fdb710d7c7bcec1f2c6070ef"
@@ -4490,6 +4495,11 @@ geckodriver@^1.16.0:
     got "5.6.0"
     https-proxy-agent "2.2.1"
     tar "4.0.2"
+
+generate-json-webpack-plugin@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/generate-json-webpack-plugin/-/generate-json-webpack-plugin-0.3.1.tgz#b5ebb383ba552d8be663ce177ed134f480735144"
+  integrity sha512-0gsqCyLf1OF+9tjN75QkPYV6UoyuPCfhgLXcX44/Ft9j82z9kBG/7yMS/ufN8yU2l4noSNEVNYQ9GdqenH/0cQ==
 
 get-caller-file@^1.0.1:
   version "1.0.3"
@@ -10675,6 +10685,13 @@ yauzl@2.4.1:
   dependencies:
     fd-slicer "~1.0.1"
 
+yazl@^2.4.3:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/yazl/-/yazl-2.5.1.tgz#a3d65d3dd659a5b0937850e8609f22fffa2b5c35"
+  integrity sha512-phENi2PLiHnHb6QBVot+dJnaAZ0xosj7p3fWl+znIjBDlnMI2PsZCJZ306BPTFOaHf5qdDEI8x5qFrSOBN5vrw==
+  dependencies:
+    buffer-crc32 "~0.2.3"
+
 yorkie@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/yorkie/-/yorkie-2.0.0.tgz#92411912d435214e12c51c2ae1093e54b6bb83d9"
@@ -10684,3 +10701,11 @@ yorkie@^2.0.0:
     is-ci "^1.0.10"
     normalize-path "^1.0.0"
     strip-indent "^2.0.0"
+
+zip-webpack-plugin@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/zip-webpack-plugin/-/zip-webpack-plugin-3.0.0.tgz#63b3c173f1a87a006915cd7328a3c40b44dc8e32"
+  integrity sha512-5kNvPv+TUP3JqKWQUXj0vTgXHIRQpYw5YyBUVXQ0pumTAK+a4OZ+eXDHnh44nyr9B1XJQZq9WtSSm5j6NQhjWQ==
+  dependencies:
+    webpack-sources "^1.1.0"
+    yazl "^2.4.3"
