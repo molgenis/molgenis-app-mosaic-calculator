@@ -1,7 +1,10 @@
-import { shallowMount, createLocalVue, mount } from '@vue/test-utils'
+import { shallowMount, createLocalVue } from '@vue/test-utils'
 import Vuex from 'vuex'
 import MosaicView from '@/components/MosaicView.vue'
 import * as jobService from '@/service/JobService'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 jest.mock('@/service/JobService', () => ({
   cancelPolling: jest.fn(),
@@ -11,6 +14,9 @@ jest.mock('@/service/JobService', () => ({
 const localVue = createLocalVue()
 
 localVue.use(Vuex)
+
+library.add(faSpinner)
+localVue.component('font-awesome-icon', FontAwesomeIcon)
 
 describe('MosaicView.vue', () => {
   let store: any

@@ -51,7 +51,7 @@
     <div class="row" v-show="isRunning && !error">
       <div class="col-md-6">
         <span>
-          <i class="fas fa-spinner fa-spin"></i>
+          <font-awesome-icon icon="spinner" spin />
           <span v-show="!experimentId"> Uploading data ...</span>
           <span v-show="experimentId"> Running analysis, this can take some time ...</span>
         </span>
