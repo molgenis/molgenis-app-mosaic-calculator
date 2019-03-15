@@ -1,5 +1,6 @@
 {
   "name": "molgenis-app-mosaic-calculator",
+  "description": "Calculate mosaic percentage",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +11,13 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
-    "vue": "^2.5.22"
+    "@fortawesome/fontawesome-svg-core": "^1.2.15",
+    "@fortawesome/free-solid-svg-icons": "^5.7.2",
+    "@fortawesome/vue-fontawesome": "^0.1.5",
+    "@molgenis/molgenis-api-client": "^3.1.0",
+    "pdfvuer": "^1.1.0",
+    "vue": "^2.5.22",
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
     "@types/jest": "^23.1.4",
@@ -27,9 +34,11 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0",
-    "geckodriver": "^1.14.1",
+    "geckodriver": "^1.16.0",
+    "generate-json-webpack-plugin": "^0.3.1",
     "ts-jest": "^23.0.0",
     "typescript": "~3.2.2",
-    "vue-template-compiler": "^2.5.21"
+    "vue-template-compiler": "^2.5.21",
+    "zip-webpack-plugin": "^3.0.0"
   }
 }
