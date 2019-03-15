@@ -21,8 +21,8 @@ The user can remove data and result by clicking the 'clear all data' button.
 ###App instalation
 
 - Upload app using molgenis app store (minimal molgenis version 7.3.7)
-- Import datamodel from exm file as described in molgenis-data-model/README.md
-- Add script via molgenis scrips plugin 
+- Import datamodel from emx file as described in molgenis-data-model/README.md
+- Add script via molgenis scripts plugin 
 - Setup nightly cleaning job using scrips/mosaic_cleanup.R
 
 ##Development
