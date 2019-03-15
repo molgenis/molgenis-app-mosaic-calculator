@@ -14,14 +14,12 @@ row.data <- entity.response$items[[1]]
 id <- row.data$id
 gender <- row.data$gender
 
-snp.file.url <- row.data$snpFile$url
-#snp.file.url <- gsub("http://localhost", "host.docker.internal", snp.file.url)
-snp.file.response <- getURL(paste0(snp.file.url, "?molgenis-token=", token))
+snp.file.url <- paste0(mol.url, "/files/", row.data$snpFile$id, "?molgenis-token=", token)
+snp.file.response <- getURL(snp.file.url)
 snpm.data <- read.table(textConnection(snp.file.response), skip = 9, header = T, sep = "\t")[,c(3,4,6)]
 
-event.file.url <- row.data$eventFile$url
-#event.file.url <- gsub("http://localhost", "host.docker.internal", event.file.url)
-event.file.response <- getURL(paste0(event.file.url, "?molgenis-token=", token))
+event.file.url <- paste0(mol.url, "/files/", row.data$eventFile$id, "?molgenis-token=", token)
+event.file.response <- getURL(event.file.url)
 event.data <- read.table(textConnection(event.file.response), header = T, sep = "\t")
 
 print(c(id, gender, event.file.url, snp.file.url ))
