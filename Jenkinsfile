@@ -45,29 +45,12 @@ pipeline {
                 }
             }
         }
-        stage('Install, test and build: [ chore/cli3 ]') {
-            when {
-                branch 'chore/cli3'
-            }
-            steps {
-                milestone 1
-                container('node') {
-                    sh "yarn install"
-                    sh "yarn test:unit"
-                    sh "yarn test:e2e --env ci_chrome,ci_safari,ci_ie11,ci_firefox"
-                }
-            }
-            post {
-                always {
-                    container('node') {
-                        sh "curl -s https://codecov.io/bash | bash -s - -c -F unit -K"
-                    }
-                }
-            }
-        }
         stage('Install, test and build: [ master ]') {
             when {
                 branch 'master'
+                not {
+                    changelog '^\\[ci skip\\] .*'
+                }
             }
             steps {
                 milestone 1
@@ -88,6 +71,9 @@ pipeline {
         stage('Release: [ master ]') {
             when {
                 branch 'master'
+                not {
+                    changelog '^\\[ci skip\\] .*'
+                }
             }
             environment {
                 REPOSITORY = 'molgenis/molgenis-app-mosaic-calculator'
