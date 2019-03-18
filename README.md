@@ -2,7 +2,7 @@
 
 Front end for running [mosaic analysis](https://github.com/molgenis/mosaicr) using [molgenis](https://github.com/molgenis/molgenis). 
 
-##Usage
+## Usage
 
 - Use 'Regions file' input to select events file
 - Use 'SNPs file' input to select snp-array output file
@@ -18,14 +18,14 @@ Full analysis output is available by clicking the download link.
 Nightly data and results removal is part of the app installation procedure. 
 The user can remove data and result by clicking the 'clear all data' button.
 
-###App instalation
+### App instalation
 
 - Upload app using molgenis app store (minimal molgenis version 7.3.7)
 - Import datamodel from emx file as described in molgenis-data-model/README.md
 - Add script via molgenis scripts plugin 
 - Setup nightly cleaning job using scrips/mosaic_cleanup.R
 
-##Development
+## Development
 
 #### Project setup
 ```
