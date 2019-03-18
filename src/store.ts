@@ -33,7 +33,6 @@ export default new Vuex.Store({
         return jobService.runJob(experimentId).then((resultUrl: string) => {
           commit('isRunning', false)
           commit('resultUrl', resultUrl)
-          return experimentRepository.saveResultFileId(experimentId, resultUrl)
         }, () => {
           commit('error', 'Error; Failed to run experiment.')
         })

@@ -12,7 +12,7 @@
         - Content: molgenis_mosaic.R file content
             -  Replace the `mol.url` variable with the molgenis server uri (for example: 'https://molgenis.org')
         - Generate security token; yes
-        - Result file extension: pdf
+        - Result file extension: .mosaic.pdf (!! this '.mosaic.' part is used by the cleanup script)
         - Parameters: id 
 - Setup a cleanup job using the 'Scheduled jobs' plugin to clear the data at a set interval (nightly).
     -  Replace the `mol.url` variable with the molgenis server uri (for example: 'https://molgenis.org')
