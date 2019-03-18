@@ -27,21 +27,6 @@ describe('ExperimentRepository', () => {
     })
   })
 
-  describe('saveResultFileId', () => {
-    it('should use the api to store the results file id', () => {
-      const experimentId = 'exp-id'
-      const resultFileUri = '/some/uri/with/res-id'
-      experimentRepository.saveResultFileId(experimentId, resultFileUri)
-
-      const expectedOptions = {
-        body: 'res-id',
-        method: 'PUT'
-      }
-
-      expect(api.post).toHaveBeenCalledWith('/api/v1/mosaic_exp_data/exp-id/resultFileId', expectedOptions)
-    })
-  })
-
   describe('removeData', () => {
     it('should delete the results and then delete the experiment data', (done) => {
       const experimentId = 'exp-id'

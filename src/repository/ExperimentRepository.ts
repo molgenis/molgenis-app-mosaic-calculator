@@ -3,7 +3,6 @@ import api from '@molgenis/molgenis-api-client'
 
 const EXP_ENTITY_ID = 'mosaic_exp_data'
 const RESULT_FILE_ENTITY_ID = 'sys_FileMeta'
-const RESULT_ATTR_ID = 'resultFileId'
 
 const getIdFromUri = (pollUri: string) => pollUri.split('/').pop()
 
@@ -29,18 +28,6 @@ const saveExpData = (expData: any) => {
   })
 }
 
-const saveResultFileId = (experimentId: string, resultFileUri: string) => {
-  const options = {
-    body: getIdFromUri(resultFileUri),
-    method: 'PUT'
-  }
-
-  const encodedTableId = encodeURIComponent(EXP_ENTITY_ID)
-  const encodedRowId = encodeURIComponent(experimentId)
-  const encodedColumnId = encodeURIComponent(RESULT_ATTR_ID)
-  return api.post(`/api/v1/${encodedTableId}/${encodedRowId}/${encodedColumnId}`, options)
-}
-
 const deleteResultFile = (resultFileId: string) => {
   const resultFile = encodeURIComponent(resultFileId)
   const fileEntity = encodeURIComponent(RESULT_FILE_ENTITY_ID)
@@ -61,5 +48,5 @@ const removeData = (experimentId: string, resultFileUri: string) => {
 }
 
 export {
-  saveExpData, saveResultFileId, removeData
+  saveExpData, removeData
 }

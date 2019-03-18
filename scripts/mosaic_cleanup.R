@@ -18,9 +18,14 @@ for(analysis in analyses) {
     DELETE(paste0(mol.url, "/api/v1/mosaic_exp_data/", analysis.id), add_headers('x-molgenis-token' = token))
 }
 
+# fetch result rows to be cleaned
+result.url <- paste0(mol.url, "/api/v2/sys_FileMeta?molgenis-token=", token, "&q=filename=like=.mosaic.pdf")
+response <- fromJSON(getURL(result.url))
+result.files <- response$items
+
 print("delete result data")
-for(analysis in analyses) {
-    result.file.id <- analysis$resultFileId
+for(file in result.files) {
+    result.file.id <- file$id
     print(result.file.id)
     DELETE(paste0(mol.url, "/api/v1/sys_FileMeta/", result.file.id), add_headers('x-molgenis-token' = token))
 }

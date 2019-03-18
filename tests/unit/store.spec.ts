@@ -54,8 +54,7 @@ describe('store', () => {
         experimentRepository.saveExpData.mockResolvedValue('experiment-id')
         // @ts-ignore
         jobService.runJob.mockResolvedValue('result-url')
-        // @ts-ignore
-        experimentRepository.saveResultFileId.mockResolvedValue(undefined)
+
         store.dispatch('runExperiment', mockData).then(() => {
           expect(store.state.experimentId).toEqual('experiment-id')
           expect(store.state.isRunning).toEqual(false)
