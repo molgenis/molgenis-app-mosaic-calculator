@@ -1,4 +1,13 @@
-# Mosaic app data model
+# Server setup
+
+## Using molgenis commander
+Script `init-mosaic` is a [molgenis-commander](https://pypi.org/project/molgenis-commander/) script that you can run to setup the server.
+You need commander version >= 1.2.0
+
+Copy the script to your mcmd scripts folder and run it.
+Some actions cannot be scripted, you'll be prompted to perform those manually.
+
+## Without molgenis commander
 
 - Upload the data model emx file using the 'Advanced data import' plugin, commander or API.
 - Use the molgenis permission manager to mark the 'exp_data' entity as row level secured.
