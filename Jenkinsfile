@@ -17,7 +17,8 @@ pipeline {
                         env.CODECOV_TOKEN = sh(script: 'vault read -field=molgenis-app-mosaic-calculator secret/ops/token/codecov', returnStdout: true)
                         env.SAUCE_CRED_USR = sh(script: 'vault read -field=username secret/ops/token/saucelabs', returnStdout: true)
                         env.SAUCE_CRED_PSW = sh(script: 'vault read -field=value secret/ops/token/saucelabs', returnStdout: true)
-                        env.NPM_TOKEN = sh(script: 'vault read -field=value secret/ops/token/npm', returnStdout: true)
+                        env.REGISTRY_CRED_USR = sh(script: 'vault read -field=username secret/ops/account/nexus', returnStdout: true)
+                        env.REGISTRY_CRED_PSW = sh(script: 'vault read -field=password secret/ops/account/nexus', returnStdout: true)
                     }
                 }
                 container('node') {
@@ -44,29 +45,12 @@ pipeline {
                 }
             }
         }
-        stage('Install, test and build: [ chore/cli3 ]') {
-            when {
-                branch 'chore/cli3'
-            }
-            steps {
-                milestone 1
-                container('node') {
-                    sh "yarn install"
-                    sh "yarn test:unit"
-                    sh "yarn test:e2e --env ci_chrome,ci_safari,ci_ie11,ci_firefox"
-                }
-            }
-            post {
-                always {
-                    container('node') {
-                        sh "curl -s https://codecov.io/bash | bash -s - -c -F unit -K"
-                    }
-                }
-            }
-        }
         stage('Install, test and build: [ master ]') {
             when {
                 branch 'master'
+                not {
+                    changelog '^\\[ci skip\\] .*'
+                }
             }
             steps {
                 milestone 1
@@ -87,9 +71,13 @@ pipeline {
         stage('Release: [ master ]') {
             when {
                 branch 'master'
+                not {
+                    changelog '^\\[ci skip\\] .*'
+                }
             }
             environment {
                 REPOSITORY = 'molgenis/molgenis-app-mosaic-calculator'
+                REGISTRY = 'registry.molgenis.org'
             }
             steps {
                 timeout(time: 30, unit: 'MINUTES') {
@@ -114,10 +102,7 @@ pipeline {
 
                     sh "git push --tags origin ${BRANCH_NAME}"
 
-                    sh "echo //${env.NPM_REGISTRY}/:_authToken=${NPM_TOKEN} > ~/.npmrc"
-
-                    sh "npm publish"
-                    hubotSend(message: "${env.REPOSITORY} has been successfully deployed on ${env.NPM_REGISTRY}.", status: 'SUCCESS')
+                    hubotSend(message: ":confetti_ball: ${env.REPOSITORY} has been successfully deployed on ${env.REGISTRY}.", status: 'SUCCESS')
                 }
             }
         }
@@ -129,18 +114,10 @@ pipeline {
             }
         }
         success {
-            notifySuccess()
+            hubotSend(message: 'Build success', status:'INFO', site: 'slack-pr-app-team')
         }
         failure {
-            notifyFailed()
+            hubotSend(message: 'Build failed', status:'ERROR', site: 'slack-pr-app-team')
         }
     }
-}
-
-def notifySuccess() {
-    hubotSend(message: 'Build success', status:'INFO', site: 'slack-pr-app-team')
-}
-
-def notifyFailed() {
-    hubotSend(message: 'Build failed', status:'ERROR', site: 'slack-pr-app-team')
 }
