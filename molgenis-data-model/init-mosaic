@@ -4,8 +4,8 @@ give MOSAIC_VIEWER write sys_FileMeta
 give MOSAIC_VIEWER write sys_job_ScriptJobExecution
 give MOSAIC_VIEWER read sys_scr_Script
 give MOSAIC_VIEWER read sys_App
-import --from-path ~/git/molgenis-app-mosaic-calculator/molgenis-data-model/mosaic_model.xlsx
-import --from-path ~/git/molgenis-app-mosaic-calculator/molgenis-data-model/mosaic_scripts.xlsx
+import mosaic_model
+import mosaic_scripts
 $wait Fill in script contents from file, setting proper mol.url variable (for example: https://mosaic.test.molgenis.org)
 enable rls mosaic_exp_data
 give MOSAIC_VIEWER write mosaic_exp_data
