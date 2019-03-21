@@ -9,7 +9,7 @@
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit",
-    "preversion": "yarn install; yarn unit",
+    "preversion": "yarn install; yarn test:unit; yarn test:e2e --env ci_chrome,ci_safari,ci_ie11,ci_firefox",
     "postversion": "yarn build; curl -v --user ${REGISTRY_CRED_USR}:${REGISTRY_CRED_PSW} --upload-file dist/$npm_package_name.zip  https://${REGISTRY}/repository/appstore/$npm_package_name/$npm_package_version/$npm_package_name.zip"
   },
   "dependencies": {
