@@ -40,5 +40,14 @@ module.exports = {
         }
         return args
       })
+    config.module
+      .rule('worker')
+      .test(/\.worker\.js$/)
+      .use('worker-loader')
+      .loader('worker-loader')
+      .options({
+        name: 'js/[name].[hash].js'
+      })
+      .end()
   }
 }
