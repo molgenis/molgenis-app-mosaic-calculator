@@ -1,0 +1,22 @@
+# Mosaic server initialisation instructions
+add group mosaic
+give MOSAIC_VIEWER write sys_FileMeta
+give MOSAIC_VIEWER write sys_job_ScriptJobExecution
+give MOSAIC_VIEWER read sys_scr_Script
+give MOSAIC_VIEWER read sys_App
+import mosaic_model
+import mosaic_scripts
+$wait Fill in script contents from file, setting proper mol.url variable (for example: https://mosaic.test.molgenis.org)
+enable rls mosaic_exp_data
+give MOSAIC_VIEWER write mosaic_exp_data
+$wait Upload mosaic-app zipfile and put it in the menu
+give MOSAIC_VIEWER view app-molgenis-app-mosaic-calculator
+$wait Make both file attributes cascade delete in exp_data
+add user demo
+$wait Make role USER extend MOSAIC_VIEWER
+$wait If mail works: enable user signup and disable moderation
+give VIEWER none navigator
+give VIEWER none dataexplorer
+give VIEWER none searchall
+give USER none feedback
+$wait Remove Account tab from menu
